@@ -1,0 +1,666 @@
+.shell {
+  min-height: 100vh;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  background: radial-gradient(circle at 15% 20%, rgba(114, 77, 255, 0.35), transparent 55%),
+    radial-gradient(circle at 85% 15%, rgba(255, 92, 141, 0.35), transparent 50%),
+    linear-gradient(135deg, #030711, #050610 70%, #020409);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.shell::before,
+.shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  filter: blur(80px);
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.shell::before {
+  background: radial-gradient(circle at 20% 80%, rgba(61, 187, 255, 0.4), transparent 60%);
+}
+
+.shell::after {
+  background: radial-gradient(circle at 80% 60%, rgba(255, 111, 145, 0.35), transparent 60%);
+}
+
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(4, 6, 20, 0.65);
+  box-shadow: 0 25px 50px rgba(4, 9, 29, 0.35);
+  backdrop-filter: blur(18px);
+}
+
+.topBar h1 {
+  font-size: clamp(1.75rem, 4vw, 2.8rem);
+  margin: 0;
+}
+
+.topBar p {
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.userCluster {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.userBadge p {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.userBadge strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.userBadgeIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-weight: 600;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.logoutButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.logoutButton:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.rolePill {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.1);
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+.full {
+  grid-column: span 12;
+}
+
+.half {
+  grid-column: span 12;
+}
+
+@media (min-width: 768px) {
+  .half {
+    grid-column: span 6;
+  }
+}
+
+.card {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 1.75rem;
+  background: linear-gradient(145deg, rgba(8, 12, 34, 0.95), rgba(6, 9, 24, 0.85));
+  box-shadow: 0 35px 60px rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(18px);
+  animation: floatIn 0.6s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(86, 202, 255, 0.25), rgba(122, 107, 255, 0.1), rgba(255, 111, 145, 0.15));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(45px);
+  z-index: -1;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.cardEyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.15rem;
+}
+
+.incidentList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.incidentItem {
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-soft);
+}
+
+.priorityHigh {
+  color: var(--danger);
+}
+
+.priorityMedium {
+  color: var(--warning);
+}
+
+.priorityLow {
+  color: var(--success);
+}
+
+.mapCard {
+  height: 320px;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.analyticsCard {
+  background: var(--card-soft);
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.chatPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.chatPanel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(132, 189, 255, 0.25);
+  pointer-events: none;
+  opacity: 0.35;
+  animation: panelGlow 6s linear infinite;
+}
+
+.quickPrompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quickPromptButton {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 0.85rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.quickPromptButton:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.chatMessages {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  mask-image: linear-gradient(180deg, transparent 0, black 20%, black 90%, transparent);
+}
+
+.chatBubble {
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  background: linear-gradient(130deg, rgba(111, 192, 255, 0.14), rgba(97, 67, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 35px rgba(5, 9, 27, 0.55);
+  animation: fadeInUp 0.4s ease;
+}
+
+.typingIndicator {
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  align-self: flex-start;
+}
+
+.typingIndicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  animation: typingBounce 1.2s ease infinite;
+}
+
+.typingIndicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typingIndicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.chatForm {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.chatForm input {
+  flex: 1;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.85rem 1rem;
+  background: rgba(5, 8, 22, 0.8);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chatForm input:focus {
+  border-color: rgba(118, 186, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(118, 186, 255, 0.2);
+  outline: none;
+}
+
+.primaryButton {
+  border-radius: 14px;
+  border: 0;
+  padding: 0.85rem 1.4rem;
+  font-weight: 600;
+  background: linear-gradient(120deg, #56caff, #7a6bff);
+  color: #05060a;
+  box-shadow: 0 15px 25px rgba(86, 202, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 30px rgba(86, 202, 255, 0.35);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.85rem 1.2rem;
+  background: transparent;
+  color: var(--text);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.secondaryButton:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.emergencyPad {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.emergencyTypes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.emergencyButton {
+  border-radius: 22px;
+  padding: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-transform: capitalize;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.emergencyButton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.15), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.emergencyButton:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.emergencyButton:hover::after {
+  opacity: 1;
+}
+
+.emergencyButton[data-selected="true"] {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 25px 35px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px) scale(1.015);
+}
+
+.emergencyFire {
+  background: linear-gradient(135deg, rgba(255, 95, 109, 0.32), rgba(255, 195, 113, 0.08));
+  border-color: rgba(255, 95, 109, 0.6);
+  box-shadow: 0 25px 45px rgba(255, 95, 109, 0.25);
+}
+
+.emergencyMedical {
+  background: linear-gradient(135deg, rgba(65, 236, 194, 0.25), rgba(31, 136, 255, 0.08));
+  border-color: rgba(65, 236, 194, 0.6);
+  box-shadow: 0 25px 45px rgba(65, 236, 194, 0.25);
+}
+
+.emergencySecurity {
+  background: linear-gradient(135deg, rgba(146, 118, 255, 0.25), rgba(0, 71, 194, 0.12));
+  border-color: rgba(146, 118, 255, 0.6);
+  box-shadow: 0 25px 45px rgba(146, 118, 255, 0.25);
+}
+
+.emergencyIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.emergencyCopy strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 1.05rem;
+}
+
+.emergencyCopy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.confirmPane {
+  padding: 1.25rem;
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.02);
+  animation: fadeInUp 0.35s ease;
+}
+
+.confirmTextarea {
+  width: 100%;
+  min-height: 90px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 0.75rem 0;
+  padding: 0.85rem;
+  background: rgba(5, 8, 22, 0.8);
+  color: var(--text);
+  resize: vertical;
+}
+
+.confirmTextarea:focus {
+  outline: none;
+  border-color: rgba(86, 202, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(86, 202, 255, 0.2);
+}
+
+.statusPulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  animation: glowPulse 2s ease infinite;
+}
+
+.statusPulse::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #65f4b3;
+  box-shadow: 0 0 12px rgba(101, 244, 179, 0.7);
+}
+
+.signalPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.signalBadge {
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(101, 244, 179, 0.35), rgba(42, 186, 160, 0.2));
+  border: 1px solid rgba(101, 244, 179, 0.5);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.signalTile {
+  padding: 0.8rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.signalTile span {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.signalTile strong {
+  font-size: 1.4rem;
+}
+
+.signalTile small {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tipList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tipItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+}
+
+.tipItem span {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes panelGlow {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes typingBounce {
+  0% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chatBubble,
+  .confirmPane,
+  .statusPulse {
+    animation: none;
+  }
+
+  .emergencyButton,
+  .primaryButton,
+  .quickPromptButton {
+    transition: none;
+  }
+
+  .chatPanel::after,
+  .typingIndicator span {
+    animation: none;
+  }
+}

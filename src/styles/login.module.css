@@ -1,0 +1,80 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: min(420px, 100%);
+  background: var(--card);
+  border-radius: 28px;
+  padding: 2.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toggleWrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.role,
+.roleActive {
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  border: 1px solid transparent;
+  background: var(--card-soft);
+  color: var(--muted);
+}
+
+.roleActive {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.card input {
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+.submit {
+  margin-top: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 0;
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
+  color: #05060a;
+  font-weight: 600;
+}
+
+.modeSwitch {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.85rem;
+}

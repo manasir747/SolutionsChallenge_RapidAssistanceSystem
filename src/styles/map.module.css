@@ -1,0 +1,12 @@
+.mapShell {
+  width: 100%;
+  min-height: 320px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.mapCanvas {
+  width: 100%;
+  height: 100%;
+}

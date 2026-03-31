@@ -1,0 +1,22 @@
+# Node / Next.js
+node_modules
+.next
+out
+.env.local
+.env*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# Firebase
+.firebase
+firestore-debug.log
+ui-debug.log
+functions/lib
+functions/node_modules
+
+# VS Code
+.vscode
+.DS_Store

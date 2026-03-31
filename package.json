@@ -1,0 +1,39 @@
+{
+  "name": "rapid-assistance-system",
+  "version": "1.0.0",
+  "description": "Rapid Crisis Response System for hospitality environments with React, Firebase, and Gemini",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "firebase:emulators": "cd functions && npm run build && cd .. && firebase emulators:start"
+  },
+  "keywords": [
+    "nextjs",
+    "firebase",
+    "gemini",
+    "hospitality",
+    "crisis-response"
+  ],
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2",
+    "@googlemaps/react-wrapper": "^1.2.0",
+    "firebase": "^12.11.0",
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.3",
+    "firebase-tools": "^15.12.0",
+    "typescript": "^5.4.5"
+  }
+}
