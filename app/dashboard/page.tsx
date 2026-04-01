@@ -44,7 +44,7 @@ const STATUS_COPY = {
   }
 } as const;
 
-const EMERGENCY_CONTACT = "+971 800 555";
+const EMERGENCY_CONTACT = "112";
 
 const metersBetween = (pointA: LocationPoint, pointB: LocationPoint) => {
   const latDiff = (pointB.lat - pointA.lat) * 111_000;
@@ -284,12 +284,24 @@ export default function DashboardPage() {
       <section className={styles.grid}>
         {role === "guest" && (
           <>
-            <div className={styles.half}>
+            <div className={styles.full}>
               <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} />
             </div>
             <div className={styles.half}>
-              <div className={`${styles.card} ${styles.safetyPanel}`}>
+              <div className={styles.card}>
                 <div className={styles.cardHeader}>
+                  <div>
+                    <p className={styles.cardEyebrow}>Field View</p>
+                    <h3>Live incident map</h3>
+                  </div>
+                  <span className={styles.signalBadge}>Tracking</span>
+                </div>
+                <LiveMap incidents={incidents} guestLocation={geoLocation} focusIncident={selectedIncident} />
+              </div>
+            </div>
+            <div className={styles.half}>
+              <div className={`${styles.card} ${styles.safetyPanel}`}>
+                 <div className={styles.cardHeader}>
                   <div>
                     <p className={styles.cardEyebrow}>Guidance</p>
                     <h3>Safety actions</h3>
@@ -322,46 +334,39 @@ export default function DashboardPage() {
                 </ul>
               </div>
             </div>
-              <div className={styles.full}>
-                <div className={styles.guestLowerGrid}>
-                  <AIChatPanel role={role} />
-                  <div className={styles.rightColumn}>
-                    {hasGuestMap && (
-                      <div className={styles.card}>
-                        <LiveMap incidents={incidents} guestLocation={geoLocation} focusIncident={selectedIncident} />
-                      </div>
-                    )}
-                    <div className={`${styles.card} ${styles.timelinePane}`}>
-                      <div className={styles.cardHeader}>
-                        <div>
-                          <p className={styles.cardEyebrow}>Activity</p>
-                          <h3>Incident timeline</h3>
-                        </div>
-                        <span className={styles.signalBadge}>Live feed</span>
-                      </div>
-                      <ul className={styles.timelineList}>
-                        {timelineEvents.length ? (
-                          timelineEvents.map((event) => (
-                            <li key={event.id} className={styles.timelineItem}>
-                              <div className={styles.timelineBadge} />
-                              <div>
-                                <div className={styles.timelineMeta}>
-                                  <strong>{event.label}</strong>
-                                  <span>{event.time}</span>
-                                </div>
-                                <p>{event.notes}</p>
-                                <small>Status: {event.status.replace(/_/g, " ")}</small>
-                              </div>
-                            </li>
-                          ))
-                        ) : (
-                          <li className={styles.timelineEmpty}>No active incidents yet. Stay alert for instructions.</li>
-                        )}
-                      </ul>
+            <div className={styles.full}>
+              <div className={styles.guestLowerGrid}>
+                <AIChatPanel role={role} />
+                <div className={`${styles.card} ${styles.timelinePane}`}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <p className={styles.cardEyebrow}>Activity</p>
+                      <h3>Incident timeline</h3>
                     </div>
+                    <span className={styles.signalBadge}>Live feed</span>
                   </div>
+                  <ul className={styles.timelineList}>
+                    {timelineEvents.length ? (
+                      timelineEvents.map((event) => (
+                        <li key={event.id} className={styles.timelineItem}>
+                          <div className={styles.timelineBadge} />
+                          <div>
+                            <div className={styles.timelineMeta}>
+                              <strong>{event.label}</strong>
+                              <span>{event.time}</span>
+                            </div>
+                            <p>{event.notes}</p>
+                            <small>Status: {event.status.replace(/_/g, " ")}</small>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className={styles.timelineEmpty}>No active incidents yet. Stay alert for instructions.</li>
+                    )}
+                  </ul>
                 </div>
               </div>
+            </div>
           </>
         )}
 
