@@ -2,8 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, signOut, UserCredential } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, isFirebaseReady } from "@/lib/firebase";
 import styles from "@/styles/login.module.css";
 import { UserRole } from "@/types";
@@ -28,8 +28,9 @@ export default function LoginPage() {
       if (!auth || !db) {
         throw new Error("Firebase is not configured. Set environment variables first.");
       }
+      let credential: UserCredential;
       if (mode === "signup") {
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        credential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(credential.user, { displayName: role.toUpperCase() });
         await setDoc(doc(db, "users", credential.user.uid), {
           role,
@@ -37,9 +38,46 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        credential = await signInWithEmailAndPassword(auth, email, password);
       }
-      router.replace("/dashboard");
+
+      const user = credential.user;
+      let firestoreRole: UserRole | undefined;
+
+      if (mode === "signup") {
+        firestoreRole = role;
+      } else {
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+          throw new Error("User role record not found. Contact an administrator.");
+        }
+        firestoreRole = userDoc.data()?.role as UserRole | undefined;
+        if (!firestoreRole) {
+          throw new Error("User role missing on account. Contact an administrator.");
+        }
+        if (firestoreRole !== role) {
+          setError(`This account is registered as ${firestoreRole.toUpperCase()}. Please select the correct role.`);
+          await signOut(auth);
+          return;
+        }
+      }
+
+      if (!firestoreRole) {
+        throw new Error("Unable to determine role for this account.");
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("role", firestoreRole);
+      }
+      console.log("Selected role:", role, "Firestore role:", firestoreRole);
+      if (firestoreRole === "staff") {
+        router.replace("/staff");
+      } else if (firestoreRole === "admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/dashboard");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to authenticate");
     } finally {
@@ -78,11 +116,11 @@ export default function LoginPage() {
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
         </label>
 
-        {error && <p className={styles.error}>{error}</p>}
-
         <button className={styles.submit} disabled={loading || !isFirebaseReady}>
           {loading ? "Securing access..." : mode === "login" ? "Log In" : "Sign Up"}
         </button>
+
+        {error && <p className={styles.error}>{error}</p>}
 
         <button
           className={styles.modeSwitch}

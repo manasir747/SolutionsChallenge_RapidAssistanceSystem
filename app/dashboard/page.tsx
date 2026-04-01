@@ -5,22 +5,53 @@ import { useRouter } from "next/navigation";
 import styles from "@/styles/dashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/hooks/useIncidents";
-import EmergencyPanel from "@/components/EmergencyPanel";
-import IncidentList from "@/components/IncidentList";
+import EmergencyPanel from "@/components/guest/EmergencyPanel";
+import IncidentList from "@/components/shared/IncidentList";
 import LiveMap from "@/components/LiveMap";
-import AIChatPanel from "@/components/AIChatPanel";
-import SuggestionPanel from "@/components/SuggestionPanel";
-import ConversationPanel from "@/components/ConversationPanel";
-import AnalyticsPanel from "@/components/AnalyticsPanel";
-import { ROLE_LABELS, DEFAULT_LOCATION } from "@/lib/constants";
+import AIChatPanel from "@/components/guest/AIChatPanel";
+import SuggestionPanel from "@/components/admin/SuggestionPanel";
+import ConversationPanel from "@/components/staff/ConversationPanel";
+import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
+import { ROLE_LABELS, DEFAULT_LOCATION, MOCK_EXITS } from "@/lib/constants";
 import { isFirebaseReady } from "@/lib/firebase";
-import { Incident, LocationPoint } from "@/types";
+import { Incident, IncidentType, LocationPoint } from "@/types";
 
 const ROLE_GLYPHS = {
   guest: "🌐",
   staff: "🛰️",
   admin: "🏛️"
 } as const;
+
+const INCIDENT_GUIDANCE: Record<IncidentType | "default", string[]> = {
+  fire: ["Stay low and cover your mouth with cloth.", "Close doors behind you to slow smoke.", "Use stairs, never elevators."],
+  medical: ["Move the injured person away from immediate danger.", "Apply pressure to bleeding wounds.", "Keep the guest warm and conscious."],
+  security: ["Stay out of sight and lock nearby doors.", "Do not confront the threat directly.", "Report suspicious descriptions to staff."],
+  default: ["Stay calm and follow on-screen directions.", "Share accurate details with responders.", "Keep exits and corridors clear."]
+};
+
+const STATUS_COPY = {
+  safe: {
+    label: "Safe",
+    message: "No active threats detected. Continue to monitor announcements."
+  },
+  warning: {
+    label: "Warning",
+    message: "An incident requires awareness. Prepare to assist or evacuate."
+  },
+  critical: {
+    label: "Critical",
+    message: "Prioritize evacuation instructions and assist guests nearby."
+  }
+} as const;
+
+const EMERGENCY_CONTACT = "+971 800 555";
+
+const metersBetween = (pointA: LocationPoint, pointB: LocationPoint) => {
+  const latDiff = (pointB.lat - pointA.lat) * 111_000;
+  const lngDiff =
+    (pointB.lng - pointA.lng) * 111_000 * Math.cos(((pointA.lat + pointB.lat) / 2) * (Math.PI / 180));
+  return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,24 +64,56 @@ export default function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const ready = isFirebaseReady;
   const roleGlyph = ROLE_GLYPHS[role];
+  const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
-  const guestSignals = useMemo(
-    () => [
-      { label: "Response ETA", value: "< 4 min", hint: "Nearest safety team en route" },
-      { label: "Shelter Level", value: "Stable", hint: "No evacuation order" },
-      { label: "Signal", value: "Strong", hint: "Emergency channel connected" }
-    ],
-    []
-  );
+  const activeIncident = useMemo(() => incidents.find((incident) => incident.status !== "resolved"), [incidents]);
 
-  const guestTips = useMemo(
-    () => [
-      "Keep exits clear of luggage or carts.",
-      "Share accurate details with responders when prompted.",
-      "Avoid elevators until the all-clear message is sent."
-    ],
-    []
-  );
+  const statusLevel = useMemo(() => {
+    if (!activeIncident) return "safe" as const;
+    if (activeIncident.priority === "high" || activeIncident.type === "fire") return "critical" as const;
+    return "warning" as const;
+  }, [activeIncident]);
+
+  const instructionSet = useMemo(() => {
+    if (!activeIncident) return INCIDENT_GUIDANCE.default;
+    return INCIDENT_GUIDANCE[activeIncident.type] ?? INCIDENT_GUIDANCE.default;
+  }, [activeIncident]);
+
+  const nearestExit = useMemo(() => {
+    if (!geoLocation) return null;
+    let closest = MOCK_EXITS[0];
+    let minDistance = Number.POSITIVE_INFINITY;
+    MOCK_EXITS.forEach((exit) => {
+      const distance = metersBetween(geoLocation, exit);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = exit;
+      }
+    });
+    const direction = closest.lng - geoLocation.lng >= 0 ? "right" : "left";
+    return {
+      label: closest.label,
+      distance: Math.max(5, Math.round(minDistance)),
+      direction
+    };
+  }, [geoLocation]);
+
+  const timelineEvents = useMemo(() => {
+    const formatTime = (value?: string) => {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Just now";
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    };
+
+    return incidents.slice(0, 4).map((incident) => ({
+      id: incident.id,
+      label: `${incident.type.charAt(0).toUpperCase()}${incident.type.slice(1)} alert`,
+      status: incident.status,
+      time: formatTime(incident.updatedAt ?? incident.createdAt),
+      notes: incident.notes ?? "Awaiting field report"
+    }));
+  }, [incidents]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -131,6 +194,11 @@ export default function DashboardPage() {
     return messages[selectedIncident.id] ?? [];
   }, [messages, selectedIncident]);
 
+  const systemStatusLabel = ready ? "Live" : "Simulation";
+  const activeIncidentLabel = activeIncident
+    ? `${activeIncident.type} • ${activeIncident.status.replace(/_/g, " ")}`
+    : "No active incident";
+
   if (loading) {
     return (
       <main className={styles.shell}>
@@ -144,15 +212,30 @@ export default function DashboardPage() {
       <div className={styles.topBar}>
         <div>
           <h1>Rapid Assistance</h1>
-          <p>{ROLE_LABELS[role]} View</p>
+          <div className={styles.titleMeta}>
+            <p>{ROLE_LABELS[role]} View</p>
+            <span className={styles.rolePill}>{role.toUpperCase()}</span>
+          </div>
         </div>
-        <div className={styles.userCluster}>
+        <div className={styles.headerMeta}>
+          <div className={styles.metaTile}>
+            <p>Emergency desk</p>
+            <div className={styles.metaPrimary}>{EMERGENCY_CONTACT}</div>
+          </div>
+          <div className={styles.metaTile}>
+            <p>System status</p>
+            <div className={`${styles.metaStatus} ${ready ? styles.statusLive : styles.statusSim}`}>{systemStatusLabel}</div>
+          </div>
+          <div className={styles.metaTile}>
+            <p>Active incident</p>
+            <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
+          </div>
           <div className={styles.userBadge}>
             <span className={styles.userBadgeIcon} aria-hidden="true">
               {roleGlyph}
             </span>
             <div>
-              <p>Secure session</p>
+              <p>Logged in</p>
               <strong>{ROLE_LABELS[role]}</strong>
             </div>
           </div>
@@ -187,39 +270,80 @@ export default function DashboardPage() {
               <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} />
             </div>
             <div className={styles.half}>
-              <div className={`${styles.card} ${styles.signalPanel}`}>
+              <div className={`${styles.card} ${styles.safetyPanel}`}>
                 <div className={styles.cardHeader}>
                   <div>
-                    <p className={styles.cardEyebrow}>Readiness</p>
-                    <h3>Safety Snapshot</h3>
+                    <p className={styles.cardEyebrow}>Guidance</p>
+                    <h3>Safety actions</h3>
                   </div>
-                  <span className={styles.signalBadge}>Calm</span>
+                  <span className={`${styles.statusChip} ${styles[`status${statusLevel.charAt(0).toUpperCase() + statusLevel.slice(1)}`]}`}>
+                    {STATUS_COPY[statusLevel].label}
+                  </span>
                 </div>
-                <div className={styles.signalGrid}>
-                  {guestSignals.map((signal) => (
-                    <div key={signal.label} className={styles.signalTile}>
-                      <span>{signal.label}</span>
-                      <strong>{signal.value}</strong>
-                      <small>{signal.hint}</small>
-                    </div>
-                  ))}
+                <p className={styles.safetyMessage}>{STATUS_COPY[statusLevel].message}</p>
+                <div className={styles.exitCallout}>
+                  <div>
+                    <p>Nearest exit</p>
+                    <strong>
+                      {nearestExit
+                        ? `${nearestExit.label} • ${nearestExit.distance}m to your ${nearestExit.direction}`
+                        : "Exits highlighted on map"}
+                    </strong>
+                  </div>
+                  <button className={styles.secondaryButton} type="button" onClick={() => setSelectedIncident(incidents[0])}>
+                    Focus map
+                  </button>
                 </div>
-                <ul className={styles.tipList}>
-                  {guestTips.map((tip) => (
-                    <li key={tip} className={styles.tipItem}>
-                      <span aria-hidden="true">✦</span>
+                <ul className={styles.instructionList}>
+                  {instructionSet.map((tip) => (
+                    <li key={tip}>
+                      <span aria-hidden="true">●</span>
                       {tip}
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className={styles.full}>
-              <LiveMap incidents={incidents} guestLocation={geoLocation} focusIncident={selectedIncident} />
-            </div>
-            <div className={styles.full}>
-              <AIChatPanel role={role} />
-            </div>
+              <div className={styles.full}>
+                <div className={styles.guestLowerGrid}>
+                  <AIChatPanel role={role} />
+                  <div className={styles.rightColumn}>
+                    {hasGuestMap && (
+                      <div className={styles.card}>
+                        <LiveMap incidents={incidents} guestLocation={geoLocation} focusIncident={selectedIncident} />
+                      </div>
+                    )}
+                    <div className={`${styles.card} ${styles.timelinePane}`}>
+                      <div className={styles.cardHeader}>
+                        <div>
+                          <p className={styles.cardEyebrow}>Activity</p>
+                          <h3>Incident timeline</h3>
+                        </div>
+                        <span className={styles.signalBadge}>Live feed</span>
+                      </div>
+                      <ul className={styles.timelineList}>
+                        {timelineEvents.length ? (
+                          timelineEvents.map((event) => (
+                            <li key={event.id} className={styles.timelineItem}>
+                              <div className={styles.timelineBadge} />
+                              <div>
+                                <div className={styles.timelineMeta}>
+                                  <strong>{event.label}</strong>
+                                  <span>{event.time}</span>
+                                </div>
+                                <p>{event.notes}</p>
+                                <small>Status: {event.status.replace(/_/g, " ")}</small>
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <li className={styles.timelineEmpty}>No active incidents yet. Stay alert for instructions.</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
           </>
         )}
 
