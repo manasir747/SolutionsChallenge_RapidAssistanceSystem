@@ -26,6 +26,10 @@ export default function IncidentList({
   onSelect,
   selectedId
 }: IncidentListProps) {
+  const getGuestEmail = (incident: Incident) => {
+    return incident.guestEmail || "Email not available";
+  };
+
   return (
     <div className={`${styles.card} ${styles.full}`}>
       <div className={styles.cardHeader}>
@@ -44,6 +48,9 @@ export default function IncidentList({
               <strong>{incident.type.toUpperCase()}</strong>
               <span className={priorityClass[incident.priority]}>● {incident.priority}</span>
             </div>
+            <p>
+              <strong>Guest Email:</strong> {getGuestEmail(incident)}
+            </p>
             <p>{incident.notes ?? "No additional details"}</p>
             <small>{new Date(incident.createdAt).toLocaleString()}</small>
             <footer style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.75rem" }}>

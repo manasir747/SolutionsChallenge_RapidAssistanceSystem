@@ -14,6 +14,7 @@ export interface Incident {
   status: IncidentStatus;
   priority: "low" | "medium" | "high";
   guestId: string;
+  guestEmail?: string;
   assignedStaffId?: string;
   createdAt: string;
   updatedAt: string;

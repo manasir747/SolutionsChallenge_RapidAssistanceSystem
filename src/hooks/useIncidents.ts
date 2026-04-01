@@ -6,6 +6,7 @@ import {
   arrayUnion,
   collection,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -14,7 +15,7 @@ import {
   updateDoc,
   where
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { ChatMessage, Incident, IncidentType, UserRole } from "@/types";
 
 const fallbackIncidents: Incident[] = [
@@ -58,6 +59,38 @@ export function useIncidents(role: UserRole, userId?: string) {
   const [loading, setLoading] = useState(true);
   const firestore = db;
 
+  const hydrateGuestEmails = useCallback(
+    async (baseIncidents: Incident[]) => {
+      if (!firestore || baseIncidents.length === 0) return baseIncidents;
+
+      const uniqueGuestIds = Array.from(new Set(baseIncidents.map((incident) => incident.guestId).filter(Boolean)));
+      if (uniqueGuestIds.length === 0) return baseIncidents;
+
+      const guestEmailById = new Map<string, string>();
+      await Promise.all(
+        uniqueGuestIds.map(async (guestId) => {
+          try {
+            const userSnap = await getDoc(doc(firestore, "users", guestId));
+            if (!userSnap.exists()) return;
+            const userData = userSnap.data() as { email?: string };
+            if (userData.email) {
+              guestEmailById.set(guestId, userData.email);
+            }
+          } catch {
+            // Best-effort hydration; keep incident visible even if user lookup fails.
+          }
+        })
+      );
+
+      return baseIncidents.map((incident) => {
+        if (incident.guestEmail) return incident;
+        const hydratedEmail = guestEmailById.get(incident.guestId);
+        return hydratedEmail ? { ...incident, guestEmail: hydratedEmail } : incident;
+      });
+    },
+    [firestore]
+  );
+
   useEffect(() => {
     if (!firestore) {
       setIncidents(fallbackIncidents);
@@ -66,6 +99,7 @@ export function useIncidents(role: UserRole, userId?: string) {
     }
 
     const baseQuery = query(collection(firestore, "incidents"), orderBy("createdAt", "desc"));
+    let active = true;
     const unsubscribe = onSnapshot(
       baseQuery,
       (snapshot) => {
@@ -85,8 +119,17 @@ export function useIncidents(role: UserRole, userId?: string) {
           };
         });
 
-        setIncidents(result);
-        setLoading(false);
+        void hydrateGuestEmails(result)
+          .then((hydrated) => {
+            if (!active) return;
+            setIncidents(hydrated);
+            setLoading(false);
+          })
+          .catch(() => {
+            if (!active) return;
+            setIncidents(result);
+            setLoading(false);
+          });
       },
       () => {
         setIncidents(fallbackIncidents);
@@ -94,8 +137,11 @@ export function useIncidents(role: UserRole, userId?: string) {
       }
     );
 
-    return () => unsubscribe();
-  }, [firestore]);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [firestore, hydrateGuestEmails]);
 
   useEffect(() => {
     if (!userId || !firestore) return;
@@ -117,11 +163,24 @@ export function useIncidents(role: UserRole, userId?: string) {
     async (type: IncidentType, guestLocation: Incident["location"], notes?: string) => {
       if (!userId) throw new Error("Authentication required");
       if (!firestore) throw new Error("Firestore unavailable");
+      let guestEmail = auth?.currentUser?.email ?? undefined;
+      if (!guestEmail) {
+        try {
+          const userSnap = await getDoc(doc(firestore, "users", userId));
+          if (userSnap.exists()) {
+            const userData = userSnap.data() as { email?: string };
+            guestEmail = userData.email;
+          }
+        } catch {
+          // Keep incident creation non-blocking if profile lookup fails.
+        }
+      }
       await addDoc(collection(firestore, "incidents"), {
         type,
         status: "pending",
         priority: type === "fire" ? "high" : "medium",
         guestId: userId,
+        guestEmail,
         location: guestLocation,
         notes,
         createdAt: serverTimestamp(),

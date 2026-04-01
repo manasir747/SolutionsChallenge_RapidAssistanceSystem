@@ -194,6 +194,24 @@ export default function DashboardPage() {
     return messages[selectedIncident.id] ?? [];
   }, [messages, selectedIncident]);
 
+  const staffNearestExit = useMemo(() => {
+    if (!selectedIncident) return null;
+    let closest = MOCK_EXITS[0];
+    let minDistance = Number.POSITIVE_INFINITY;
+    MOCK_EXITS.forEach((exit) => {
+      const distance = metersBetween(selectedIncident.location, exit);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = exit;
+      }
+    });
+
+    return {
+      label: closest.label ?? "Nearest exit",
+      distance: Math.max(5, Math.round(minDistance))
+    };
+  }, [selectedIncident]);
+
   const systemStatusLabel = ready ? "Live" : "Simulation";
   const activeIncidentLabel = activeIncident
     ? `${activeIncident.type} • ${activeIncident.status.replace(/_/g, " ")}`
@@ -359,15 +377,26 @@ export default function DashboardPage() {
                 selectedId={selectedIncident?.id}
               />
             </div>
-            <div className={styles.half}>
-              <LiveMap incidents={incidents} focusIncident={selectedIncident} />
-            </div>
-            <div className={styles.half}>
-              <ConversationPanel
-                incident={selectedIncident}
-                messages={chatMessages}
-                onSend={handleSendChat}
-              />
+            <div className={styles.full}>
+              <div className={styles.staffWorkspace}>
+                <div className={`${styles.card} ${styles.staffMapCard}`}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <p className={styles.cardEyebrow}>Field view</p>
+                      <h3>Live incident map</h3>
+                    </div>
+                    <span className={styles.signalBadge}>Tracking</span>
+                  </div>
+                  <LiveMap incidents={incidents} focusIncident={selectedIncident} />
+                </div>
+                <ConversationPanel
+                  incident={selectedIncident}
+                  messages={chatMessages}
+                  nearestExit={staffNearestExit}
+                  onSend={handleSendChat}
+                  onStatusChange={updateStatus}
+                />
+              </div>
             </div>
           </>
         )}
