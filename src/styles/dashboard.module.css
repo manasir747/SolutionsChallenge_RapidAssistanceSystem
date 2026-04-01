@@ -214,6 +214,19 @@
   gap: 1.5rem;
 }
 
+.staffWorkspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+@media (min-width: 980px) {
+  .staffWorkspace {
+    grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  }
+}
+
 .full {
   grid-column: span 12;
 }
@@ -336,6 +349,7 @@
   gap: 1rem;
   position: relative;
   overflow: hidden;
+  min-height: 100%;
 }
 
 .chatPanel::after {
@@ -355,6 +369,67 @@
   gap: 0.5rem;
 }
 
+.staffStatusStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.staffStatusTile {
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.staffStatusTile span {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.staffStatusTile strong {
+  font-size: 1rem;
+  color: #f5f7ff;
+}
+
+.staffStatusTile small {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.responderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.quickActionButton {
+  border: 1px solid rgba(104, 183, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  background: linear-gradient(135deg, rgba(86, 202, 255, 0.12), rgba(122, 107, 255, 0.08));
+  color: #eef4ff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.quickActionButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(104, 183, 255, 0.45);
+  box-shadow: 0 14px 28px rgba(45, 110, 201, 0.2);
+  background: linear-gradient(135deg, rgba(86, 202, 255, 0.18), rgba(122, 107, 255, 0.14));
+}
+
+.quickActionButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .quickPromptButton {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
@@ -372,12 +447,20 @@
 }
 
 .chatMessages {
+  flex: 1;
+  min-height: 220px;
   max-height: 240px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   mask-image: linear-gradient(180deg, transparent 0, black 20%, black 90%, transparent);
+}
+
+.staffMapCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .assistantOutput {

@@ -7,10 +7,50 @@ import { ChatMessage, Incident } from "@/types";
 interface ConversationPanelProps {
   incident?: Incident;
   messages: ChatMessage[];
+  nearestExit?: {
+    label: string;
+    distance: number;
+  } | null;
   onSend: (text: string) => Promise<void>;
+  onStatusChange: (incidentId: string, status: Incident["status"]) => Promise<void>;
 }
 
-export default function ConversationPanel({ incident, messages, onSend }: ConversationPanelProps) {
+const STATUS_LABELS: Record<Incident["status"], string> = {
+  pending: "Pending",
+  acknowledged: "Acknowledged",
+  en_route: "En route",
+  resolved: "Resolved"
+};
+
+const QUICK_ACTIONS: Array<{
+  label: string;
+  message: string;
+  status?: Incident["status"];
+}> = [
+  { label: "En route", message: "En route to incident location now.", status: "en_route" },
+  { label: "Reached scene", message: "Reached the scene and assessing conditions.", status: "acknowledged" },
+  { label: "Evacuation started", message: "Evacuation support has started in the affected area." },
+  { label: "Need backup", message: "Need additional staff support at this location." },
+  { label: "Guest assisted", message: "Guest has been assisted and moved toward a safer zone." },
+  { label: "Area cleared", message: "Area appears clear for now. Continuing to monitor." }
+];
+
+const formatStatus = (status: Incident["status"]) => STATUS_LABELS[status] ?? status.replace(/_/g, " ");
+
+const getEtaLabel = (incident: Incident) => {
+  if (incident.status === "resolved") return "Complete";
+  if (incident.status === "en_route") return incident.priority === "high" ? "1-2 min" : "3-4 min";
+  if (incident.status === "acknowledged") return "Dispatch active";
+  return incident.priority === "high" ? "Immediate" : "Stand by";
+};
+
+export default function ConversationPanel({
+  incident,
+  messages,
+  nearestExit,
+  onSend,
+  onStatusChange
+}: ConversationPanelProps) {
   const [draft, setDraft] = useState("Heading to stairwell C now.");
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +71,18 @@ export default function ConversationPanel({ incident, messages, onSend }: Conver
     setLoading(false);
   };
 
+  const handleQuickAction = async (action: (typeof QUICK_ACTIONS)[number]) => {
+    setLoading(true);
+    try {
+      if (action.status && action.status !== incident.status) {
+        await onStatusChange(incident.id, action.status);
+      }
+      await onSend(action.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={`${styles.card} ${styles.chatPanel}`}>
       <div className={styles.cardHeader}>
@@ -38,6 +90,41 @@ export default function ConversationPanel({ incident, messages, onSend }: Conver
           <h3>Incident Chat</h3>
           <small>{incident.type.toUpperCase()}</small>
         </div>
+      </div>
+      <div className={styles.staffStatusStrip}>
+        <div className={styles.staffStatusTile}>
+          <span>Assignment</span>
+          <strong>{incident.location.label ?? "On-site response"}</strong>
+          <small>{formatStatus(incident.status)}</small>
+        </div>
+        <div className={styles.staffStatusTile}>
+          <span>Priority</span>
+          <strong>{incident.priority.toUpperCase()}</strong>
+          <small>{incident.type.toUpperCase()} incident</small>
+        </div>
+        <div className={styles.staffStatusTile}>
+          <span>Nearest exit</span>
+          <strong>{nearestExit ? nearestExit.label : "Exit guidance unavailable"}</strong>
+          <small>{nearestExit ? `${nearestExit.distance}m away` : "Check live map"}</small>
+        </div>
+        <div className={styles.staffStatusTile}>
+          <span>ETA</span>
+          <strong>{getEtaLabel(incident)}</strong>
+          <small>Updated {new Date(incident.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+        </div>
+      </div>
+      <div className={styles.responderActions}>
+        {QUICK_ACTIONS.map((action) => (
+          <button
+            key={action.label}
+            type="button"
+            className={styles.quickActionButton}
+            onClick={() => handleQuickAction(action)}
+            disabled={loading}
+          >
+            {action.label}
+          </button>
+        ))}
       </div>
       <div className={styles.chatMessages}>
         {messages.map((message) => (
