@@ -63,20 +63,20 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
         <h3>Emergency Controls</h3>
         {currentLocation?.label && <span className={styles.rolePill}>{currentLocation.label}</span>}
       </div>
-      <div className={styles.emergencyHero}>
+      <div className={styles.emergencyHeroCentered}>
         <div>
-          <p className={styles.cardEyebrow}>Emergency-first</p>
-          <h3>Act immediately</h3>
-          <p>Tap once to reach the command center. No additional routing required.</p>
+          <p className={styles.cardEyebrow}>Assistance Request</p>
+          <h2 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>In case of emergency</h2>
+          <p>The Response Team will be dispatched to your location immediately.</p>
         </div>
         <button
           type="button"
-          className={styles.emergencyPrimary}
+          className={styles.emergencyPrimarySuper}
           onClick={() => beginFlow(selected)}
           aria-label="Trigger emergency alert"
         >
-          <span>🚨 Emergency</span>
-          <small>Dispatch notifies all responders</small>
+          <span>🆘 GET HELP NOW</span>
+          <small>Instant Dispatch</small>
         </button>
       </div>
       <div className={styles.emergencyTypes}>

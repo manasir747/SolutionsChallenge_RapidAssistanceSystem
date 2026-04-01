@@ -7,9 +7,9 @@ export const EMERGENCY_TYPES: { type: IncidentType; label: string; hint: string 
 ];
 
 export const MOCK_EXITS: LocationPoint[] = [
-  { lat: 25.204, lng: 55.272, label: "Sky Lobby Exit" },
-  { lat: 25.205, lng: 55.268, label: "Harbor Exit" },
-  { lat: 25.202, lng: 55.27, label: "Service Exit" }
+  { lat: 12.972, lng: 77.595, label: "MG Road Exit" },
+  { lat: 12.971, lng: 77.594, label: "Cubbon Park Exit" },
+  { lat: 12.973, lng: 77.593, label: "Vidhana Soudha Exit" }
 ];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -19,7 +19,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const DEFAULT_LOCATION: LocationPoint = {
-  lat: parseFloat(process.env.NEXT_PUBLIC_DEFAULT_LAT ?? "25.2048"),
-  lng: parseFloat(process.env.NEXT_PUBLIC_DEFAULT_LNG ?? "55.2708"),
-  label: "Resort HQ"
+  lat: parseFloat(process.env.NEXT_PUBLIC_DEFAULT_LAT ?? "12.9716"),
+  lng: parseFloat(process.env.NEXT_PUBLIC_DEFAULT_LNG ?? "77.5946"),
+  label: "Cyber Hub"
 };

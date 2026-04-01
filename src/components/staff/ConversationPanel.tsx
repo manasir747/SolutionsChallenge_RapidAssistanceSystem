@@ -86,9 +86,17 @@ export default function ConversationPanel({
   return (
     <div className={`${styles.card} ${styles.chatPanel}`}>
       <div className={styles.cardHeader}>
-        <div>
-          <h3>Incident Chat</h3>
-          <small>{incident.type.toUpperCase()}</small>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
+          <div>
+            <h3>Incident Chat</h3>
+            <small>{incident.type.toUpperCase()}</small>
+          </div>
+          {incident.guestEmail && (
+            <div className={styles.guestMetaInfo}>
+              <p className={styles.cardEyebrow}>Guest Contact</p>
+              <strong>{incident.guestEmail}</strong>
+            </div>
+          )}
         </div>
       </div>
       <div className={styles.staffStatusStrip}>

@@ -20,7 +20,7 @@ const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) =>
   const center = focusIncident?.location ?? guestLocation ?? DEFAULT_LOCATION;
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || typeof google === "undefined") return;
     if (!mapInstance.current) {
       mapInstance.current = new google.maps.Map(mapRef.current, {
         center,
@@ -42,7 +42,7 @@ const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) =>
   }, [center]);
 
   useEffect(() => {
-    if (!mapInstance.current) return;
+    if (!mapInstance.current || typeof google === "undefined") return;
     markers.current.forEach((marker) => marker.setMap(null));
 
     const nextMarkers: google.maps.Marker[] = [];
@@ -107,13 +107,14 @@ const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) =>
 
 export default function LiveMap(props: LiveMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
   const memoizedProps = useMemo(() => props, [props]);
 
   if (!apiKey) {
     return (
       <div className={styles.mapShell}>
-        <p>Set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to enable live maps.</p>
+        <div style={{ display: "grid", placeItems: "center", height: "100%", color: "rgba(255,255,255,0.4)" }}>
+          <p>Maps API key required for live terrain</p>
+        </div>
       </div>
     );
   }
@@ -121,7 +122,9 @@ export default function LiveMap(props: LiveMapProps) {
   return (
     <div className={styles.mapShell}>
       <Wrapper apiKey={apiKey}>
-        <MapCanvas {...memoizedProps} />
+        <div className={styles.mapCanvas}>
+          <MapCanvas {...memoizedProps} />
+        </div>
       </Wrapper>
     </div>
   );

@@ -27,8 +27,8 @@ const fallbackIncidents: Incident[] = [
     guestId: "guest-1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    location: { lat: 25.2048, lng: 55.2708, label: "Palm Suites" },
-    notes: "Alarm triggered on level 12"
+    location: { lat: 12.972, lng: 77.595, label: "MG Road Plaza" },
+    notes: "Alarm triggered on level 4"
   },
   {
     id: "mock-2",
@@ -39,8 +39,8 @@ const fallbackIncidents: Incident[] = [
     assignedStaffId: "staff-5",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    location: { lat: 25.199, lng: 55.27, label: "Spa Wing" },
-    notes: "Guest reported dizziness"
+    location: { lat: 12.97, lng: 77.59, label: "Lalbagh Wing" },
+    notes: "Guest reported breathing difficulty"
   }
 ];
 
