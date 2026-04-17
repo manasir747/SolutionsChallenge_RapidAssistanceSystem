@@ -52,6 +52,9 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("[/api/ai/chat] Gemini request failed", err);
     const message = err instanceof Error ? err.message : "Unable to reach Gemini";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = err instanceof Error && "status" in err && typeof err.status === "number"
+      ? err.status
+      : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

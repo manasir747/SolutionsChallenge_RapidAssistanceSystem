@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "@/styles/dashboard.module.css";
-import { EMERGENCY_TYPES } from "@/lib/constants";
-import { IncidentType, LocationPoint } from "@/types";
+import { EMERGENCY_TYPES, INCIDENT_SOURCE_LABELS } from "@/lib/constants";
+import { IncidentSource, IncidentType, LocationPoint } from "@/types";
 
 interface EmergencyPanelProps {
-  onTrigger: (type: IncidentType, notes?: string) => Promise<void>;
+  onTrigger: (type: IncidentType, source: IncidentSource, notes?: string) => Promise<void>;
   currentLocation?: LocationPoint;
 }
 
@@ -14,21 +14,70 @@ type PanelState = "idle" | "confirm" | "sending" | "success";
 
 const RESPONDERS = ["Rescue Team Bravo", "Medical Unit Echo", "Security Patrol Delta"];
 
+const guidanceByType: Record<IncidentType, string> = {
+  fire: "Move toward the nearest stairwell and avoid elevators.",
+  medical: "Keep the guest visible and clear a safe working area.",
+  security: "Retain distance and share the last known location.",
+  theft: "Preserve the scene and avoid confronting the suspect."
+};
+
+const sourceTone: Record<IncidentSource, string> = {
+  manual: "Manual request",
+  iot: "Sensor detection",
+  cctv: "CCTV / AI detection"
+};
+
+type TriggerTarget = {
+  type: IncidentType;
+  source: IncidentSource;
+  label: string;
+  hint: string;
+};
+
 export default function EmergencyPanel({ onTrigger, currentLocation }: EmergencyPanelProps) {
-  const [selected, setSelected] = useState<IncidentType>("fire");
+  const [selected, setSelected] = useState<TriggerTarget>({
+    type: "fire",
+    source: "manual",
+    label: "Fire",
+    hint: "Smoke, alarm, structural"
+  });
   const [notes, setNotes] = useState("");
   const [panelState, setPanelState] = useState<PanelState>("idle");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [responseMeta, setResponseMeta] = useState<{ eta: string; responder: string } | null>(null);
+  const [offlineActive, setOfflineActive] = useState(false);
 
   const toneMap: Record<IncidentType, { icon: string; toneClass: string }> = {
     fire: { icon: "🔥", toneClass: styles.emergencyFire },
     medical: { icon: "⛑️", toneClass: styles.emergencyMedical },
-    security: { icon: "🛡️", toneClass: styles.emergencySecurity }
+    security: { icon: "🛡️", toneClass: styles.emergencySecurity },
+    theft: { icon: "🎥", toneClass: styles.emergencySecurity }
   };
 
-  const beginFlow = (type: IncidentType) => {
-    setSelected(type);
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const syncOnlineState = () => setOfflineActive(!navigator.onLine);
+    syncOnlineState();
+    window.addEventListener("online", syncOnlineState);
+    window.addEventListener("offline", syncOnlineState);
+    return () => {
+      window.removeEventListener("online", syncOnlineState);
+      window.removeEventListener("offline", syncOnlineState);
+    };
+  }, []);
+
+  const triggerGroups = useMemo(
+    () => [
+      {
+        title: "Manual triggers",
+        items: EMERGENCY_TYPES.map((item) => ({ ...item, source: "manual" as const }))
+      }
+    ],
+    []
+  );
+
+  const beginFlow = (target: TriggerTarget) => {
+    setSelected(target);
     setPanelState("confirm");
     setFeedback(null);
   };
@@ -37,7 +86,7 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
     setPanelState("sending");
     setFeedback(null);
     try {
-      await onTrigger(selected, notes);
+      await onTrigger(selected.type, selected.source, notes);
       const eta = `${Math.floor(Math.random() * 3) + 2} min`;
       const responder = RESPONDERS[Math.floor(Math.random() * RESPONDERS.length)];
       setResponseMeta({ eta, responder });
@@ -60,14 +109,23 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
   return (
     <div className={`${styles.card} ${styles.emergencyPad}`}>
       <div className={styles.cardHeader}>
-        <h3>Emergency Controls</h3>
+        <div>
+          <p className={styles.cardEyebrow}>Crisis OS triggers</p>
+          <h3>Emergency Controls</h3>
+        </div>
         {currentLocation?.label && <span className={styles.rolePill}>{currentLocation.label}</span>}
       </div>
+      {offlineActive && (
+        <div className={styles.offlineBanner} role="status">
+          <strong>Offline Mode Active</strong>
+          <p>Fallback commands are ready while realtime connectivity is limited.</p>
+        </div>
+      )}
       <div className={styles.emergencyHeroCentered}>
         <div>
           <p className={styles.cardEyebrow}>Assistance Request</p>
           <h2 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>In case of emergency</h2>
-          <p>The Response Team will be dispatched to your location immediately.</p>
+          <p>Raise a manual incident and the Crisis OS will auto-assign the nearest response staff.</p>
         </div>
         <button
           type="button"
@@ -79,37 +137,66 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
           <small>Instant Dispatch</small>
         </button>
       </div>
-      <div className={styles.emergencyTypes}>
-        {EMERGENCY_TYPES.map((item) => (
-          <button
-            key={item.type}
-            type="button"
-            className={`${styles.emergencyButton} ${toneMap[item.type].toneClass}`}
-            data-selected={selected === item.type}
-            aria-pressed={selected === item.type}
-            onClick={() => {
-              beginFlow(item.type);
-            }}
-            title={`Trigger a ${item.label} alert`}
-          >
-            <span className={styles.emergencyIcon} aria-hidden="true">
-              {toneMap[item.type].icon}
-            </span>
-            <div className={styles.emergencyCopy}>
-              <strong>{item.label}</strong>
-              <p>{item.hint}</p>
-            </div>
-          </button>
-        ))}
+      {triggerGroups.map((group) => (
+        <div key={group.title} className={styles.triggerGroup}>
+          <div className={styles.triggerGroupHeader}>
+            <strong>{group.title}</strong>
+            <span>{group.items.length} triggers</span>
+          </div>
+          <div className={styles.emergencyTypes}>
+            {group.items.map((item) => (
+              <button
+                key={`${group.title}-${item.label}`}
+                type="button"
+                className={`${styles.emergencyButton} ${toneMap[item.type as IncidentType].toneClass}`}
+                data-selected={selected.type === item.type && selected.source === item.source}
+                aria-pressed={selected.type === item.type && selected.source === item.source}
+                onClick={() => {
+                  beginFlow({
+                    type: item.type as IncidentType,
+                    source: item.source,
+                    label: item.label,
+                    hint: item.hint
+                  });
+                }}
+                title={`Trigger ${item.label}`}
+              >
+                <span className={styles.emergencyIcon} aria-hidden="true">
+                  {toneMap[item.type as IncidentType].icon}
+                </span>
+                <div className={styles.emergencyCopy}>
+                  <strong>{item.label}</strong>
+                  <p>
+                    {item.hint}
+                    <br />
+                    <span>{sourceTone[item.source]}</span>
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div className={styles.safetyBanner}>
+        <div>
+          <p className={styles.cardEyebrow}>Guest safety system</p>
+          <strong>{selected.label} detected via {INCIDENT_SOURCE_LABELS[selected.source]}</strong>
+          <p>{guidanceByType[selected.type]}</p>
+        </div>
+        <div className={styles.safetyMiniStack}>
+          <span>Alert banner active</span>
+          <span>Escape guidance visible</span>
+        </div>
       </div>
       {panelState === "confirm" && (
         <div className={styles.confirmPane}>
           <p>
-            Confirm <strong>{selected.toUpperCase()}</strong> alert?
+            Confirm <strong>{selected.label.toUpperCase()}</strong> alert via {INCIDENT_SOURCE_LABELS[selected.source]}?
           </p>
           <textarea
             className={styles.confirmTextarea}
-            placeholder="Add context for responders"
+            placeholder="Add context for responders or AI command center"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -152,6 +239,11 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
             </div>
           </div>
           <p className={styles.alertSubtext}>Stay visible and follow on-screen instructions while the team approaches.</p>
+          <div className={styles.dispatchStrip}>
+            <span>Ambulance alerted</span>
+            <span>Fire dept notified</span>
+            <span>Police dispatched</span>
+          </div>
           <div style={{ display: "flex", gap: "0.75rem" }}>
             <button className={styles.secondaryButton} type="button" onClick={resetPanel}>
               Send another alert

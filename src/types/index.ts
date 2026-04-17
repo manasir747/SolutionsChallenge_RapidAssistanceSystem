@@ -1,6 +1,8 @@
 export type UserRole = "guest" | "staff" | "admin";
-export type IncidentType = "fire" | "medical" | "security";
+export type IncidentType = "fire" | "medical" | "security" | "theft";
+export type IncidentSource = "manual" | "iot" | "cctv";
 export type IncidentStatus = "pending" | "acknowledged" | "en_route" | "resolved";
+export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 
 export interface LocationPoint {
   lat: number;
@@ -11,15 +13,26 @@ export interface LocationPoint {
 export interface Incident {
   id: string;
   type: IncidentType;
+  source: IncidentSource;
   status: IncidentStatus;
-  priority: "low" | "medium" | "high";
+  priority: IncidentSeverity;
+  severity: IncidentSeverity;
   guestId: string;
   guestEmail?: string;
+  guestRoomNumber?: string;
   assignedStaffId?: string;
+  assignedStaffName?: string;
+  assignedStaffEmail?: string;
+  assignedStaffDepartment?: string;
+  assignedTeam?: string[];
+  notifiedDepartments?: string[];
+  responderDistanceMeters?: number;
   createdAt: string;
   updatedAt: string;
+  timestamp?: string;
   location: LocationPoint;
   notes?: string;
+  affectedPeople?: number;
   summary?: IncidentSummary;
 }
 

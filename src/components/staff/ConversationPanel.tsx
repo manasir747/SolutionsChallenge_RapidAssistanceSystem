@@ -12,7 +12,7 @@ interface ConversationPanelProps {
     distance: number;
   } | null;
   onSend: (text: string) => Promise<void>;
-  onStatusChange: (incidentId: string, status: Incident["status"]) => Promise<void>;
+  onStatusChange?: (incidentId: string, status: Incident["status"]) => Promise<void>;
 }
 
 const STATUS_LABELS: Record<Incident["status"], string> = {
@@ -25,10 +25,9 @@ const STATUS_LABELS: Record<Incident["status"], string> = {
 const QUICK_ACTIONS: Array<{
   label: string;
   message: string;
-  status?: Incident["status"];
 }> = [
-  { label: "En route", message: "En route to incident location now.", status: "en_route" },
-  { label: "Reached scene", message: "Reached the scene and assessing conditions.", status: "acknowledged" },
+  { label: "En route", message: "En route to incident location now." },
+  { label: "Reached scene", message: "Reached the scene and assessing conditions." },
   { label: "Evacuation started", message: "Evacuation support has started in the affected area." },
   { label: "Need backup", message: "Need additional staff support at this location." },
   { label: "Guest assisted", message: "Guest has been assisted and moved toward a safer zone." },
@@ -48,8 +47,7 @@ export default function ConversationPanel({
   incident,
   messages,
   nearestExit,
-  onSend,
-  onStatusChange
+  onSend
 }: ConversationPanelProps) {
   const [draft, setDraft] = useState("Heading to stairwell C now.");
   const [loading, setLoading] = useState(false);
@@ -74,9 +72,6 @@ export default function ConversationPanel({
   const handleQuickAction = async (action: (typeof QUICK_ACTIONS)[number]) => {
     setLoading(true);
     try {
-      if (action.status && action.status !== incident.status) {
-        await onStatusChange(incident.id, action.status);
-      }
       await onSend(action.message);
     } finally {
       setLoading(false);
@@ -89,7 +84,15 @@ export default function ConversationPanel({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
           <div>
             <h3>Incident Chat</h3>
+        <div className={styles.staffStatusTile}>
+          <span>Guest room</span>
+          <strong>{incident.guestRoomNumber ?? "Room pending"}</strong>
+          <small>{incident.guestEmail ?? "Guest email unavailable"}</small>
+        </div>
             <small>{incident.type.toUpperCase()}</small>
+            <p style={{ margin: "0.25rem 0 0", color: "rgba(255,255,255,0.65)" }}>
+              Source: {incident.source.toUpperCase()} • Severity: {incident.severity}
+            </p>
           </div>
           {incident.guestEmail && (
             <div className={styles.guestMetaInfo}>
@@ -107,7 +110,7 @@ export default function ConversationPanel({
         </div>
         <div className={styles.staffStatusTile}>
           <span>Priority</span>
-          <strong>{incident.priority.toUpperCase()}</strong>
+          <strong>{incident.severity.toUpperCase()}</strong>
           <small>{incident.type.toUpperCase()} incident</small>
         </div>
         <div className={styles.staffStatusTile}>

@@ -15,6 +15,10 @@ export default function AnalyticsPanel({ incidents }: AnalyticsPanelProps) {
   const resolved = incidents.filter((incident) => incident.status === "resolved").length;
   const active = incidents.length - resolved;
   const medianResponse = calcAverageResponse(incidents);
+  const sourceBreakdown = incidents.reduce<Record<string, number>>((accumulator, incident) => {
+    accumulator[incident.source] = (accumulator[incident.source] ?? 0) + 1;
+    return accumulator;
+  }, {});
 
   return (
     <div className={`${styles.card} ${styles.analyticsGrid}`}>
@@ -29,6 +33,15 @@ export default function AnalyticsPanel({ incidents }: AnalyticsPanelProps) {
       <div className={styles.analyticsCard}>
         <small>Avg Response (min)</small>
         <h2>{medianResponse}</h2>
+      </div>
+      <div className={styles.analyticsCard}>
+        <small>Source mix</small>
+        <h2>{Object.keys(sourceBreakdown).length}</h2>
+        <p style={{ margin: "0.5rem 0 0", color: "rgba(255,255,255,0.7)" }}>
+          {Object.entries(sourceBreakdown)
+            .map(([source, count]) => `${source.toUpperCase()} ${count}`)
+            .join(" • ") || "No incidents yet"}
+        </p>
       </div>
     </div>
   );

@@ -7,6 +7,8 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  color: rgba(244, 248, 255, 0.94);
+  line-height: 1.55;
 }
 
 .shell::before,
@@ -31,9 +33,9 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.75rem;
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+  padding: 2rem;
   border-radius: 32px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(6, 8, 25, 0.72);
@@ -50,8 +52,8 @@
 
 .topBar p {
   margin: 0.35rem 0 0;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
+  color: rgba(242, 247, 255, 0.9);
+  font-size: 1.02rem;
   font-family: "Space Grotesk", "Sora", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -70,8 +72,8 @@
 }
 
 .metaTile {
-  min-width: 140px;
-  padding: 0.65rem 0.9rem;
+  min-width: 165px;
+  padding: 0.8rem 1rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(10, 12, 30, 0.6);
@@ -89,7 +91,7 @@
 }
 
 .metaPrimary {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -192,7 +194,7 @@
 
 .grid {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.8rem;
   margin-top: 1rem;
 }
 
@@ -244,7 +246,7 @@
 .card {
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.09);
-  padding: 1.75rem;
+  padding: clamp(1.25rem, 2.2vw, 2.1rem);
   background: linear-gradient(145deg, rgba(8, 12, 34, 0.95), rgba(6, 9, 24, 0.85));
   box-shadow: 0 35px 60px rgba(2, 6, 23, 0.55);
   backdrop-filter: blur(18px);
@@ -291,13 +293,14 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  gap: 0.85rem;
 }
 
 .cardEyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
   color: rgba(255, 255, 255, 0.6);
   margin: 0 0 0.15rem;
 }
@@ -309,10 +312,20 @@
 }
 
 .incidentItem {
-  padding: 1rem;
+  padding: 1.15rem 1.2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--card-soft);
+  line-height: 1.6;
+}
+
+.incidentItem p {
+  margin: 0.38rem 0;
+  color: rgba(239, 246, 255, 0.88);
+}
+
+.incidentItem small {
+  color: rgba(221, 232, 248, 0.78);
 }
 
 .priorityHigh {
@@ -448,13 +461,14 @@
 
 .chatMessages {
   flex: 1;
-  min-height: 220px;
-  max-height: 240px;
+  min-height: 240px;
+  max-height: 320px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  mask-image: linear-gradient(180deg, transparent 0, black 20%, black 90%, transparent);
+  padding-right: 0.2rem;
+  mask-image: none;
 }
 
 .staffMapCard {
@@ -467,8 +481,9 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 260px;
+  max-height: 320px;
   overflow-y: auto;
+  padding-right: 0.2rem;
 }
 
 .assistantBubble {
@@ -502,12 +517,17 @@
 }
 
 .chatBubble {
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.15rem;
   border-radius: 18px;
   background: linear-gradient(130deg, rgba(111, 192, 255, 0.14), rgba(97, 67, 255, 0.08));
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 15px 35px rgba(5, 9, 27, 0.55);
   animation: fadeInUp 0.4s ease;
+}
+
+.chatBubble p {
+  margin: 0.4rem 0;
+  color: rgba(244, 248, 255, 0.95);
 }
 
 .typingIndicator {
@@ -544,7 +564,8 @@
   flex: 1;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.85rem 1rem;
+  padding: 0.95rem 1rem;
+  font-size: 0.96rem;
   background: rgba(5, 8, 22, 0.8);
   color: var(--text);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -560,7 +581,8 @@
 .primaryButton {
   border-radius: 14px;
   border: 0;
-  padding: 0.85rem 1.4rem;
+  padding: 0.9rem 1.35rem;
+  font-size: 0.95rem;
   font-weight: 600;
   background: linear-gradient(120deg, #56caff, #7a6bff);
   color: #05060a;
@@ -581,7 +603,8 @@
 .secondaryButton {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.85rem 1.2rem;
+  padding: 0.9rem 1.2rem;
+  font-size: 0.94rem;
   background: transparent;
   color: var(--text);
   transition: border-color 0.2s ease, color 0.2s ease;
@@ -616,8 +639,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 2rem;
-  padding: 3rem 1rem;
+  gap: 1.35rem;
+  padding: clamp(1.2rem, 3vw, 2rem) 1rem;
   width: 100%;
 }
 
@@ -626,22 +649,22 @@
   border-radius: 40px;
   background: linear-gradient(135deg, #ff3b3b, #ff0000);
   color: #fff;
-  font-size: 2.2rem;
+  font-size: clamp(1.35rem, 2.8vw, 1.8rem);
   font-weight: 800;
-  padding: 2.5rem 4rem;
+  padding: 1.15rem 1.8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), 0 25px 50px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 0 18px rgba(255, 0, 0, 0.28), 0 16px 28px rgba(255, 0, 0, 0.24);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-  animation: megaPulse 2s infinite ease-in-out;
+  animation: megaPulse 5s infinite ease-in-out;
   border: 4px solid rgba(255, 255, 255, 0.1);
 }
 
 .emergencyPrimarySuper small {
-  font-size: 1rem;
+  font-size: 0.78rem;
   font-weight: 600;
   opacity: 0.9;
   margin-top: 0.5rem;
@@ -1176,5 +1199,388 @@
   .emergencyPrimary {
     width: 100%;
     text-align: center;
+  }
+}
+
+.offlineBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 195, 87, 0.28);
+  background: linear-gradient(135deg, rgba(255, 195, 87, 0.16), rgba(255, 255, 255, 0.04));
+}
+
+.offlineBanner strong {
+  font-size: 0.95rem;
+}
+
+.offlineBanner p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.triggerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.triggerGroupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.25rem;
+}
+
+.triggerGroupHeader strong {
+  font-size: 0.95rem;
+}
+
+.triggerGroupHeader span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.safetyBanner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(101, 244, 179, 0.18);
+  background: linear-gradient(135deg, rgba(101, 244, 179, 0.12), rgba(255, 255, 255, 0.03));
+}
+
+.safetyBanner strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.safetyBanner p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.safetyMiniStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-end;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.85rem;
+}
+
+.dispatchStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.dispatchStrip span {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.82rem;
+}
+
+.commandShell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sectionHeading span {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+.sectionHeading p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 760px;
+}
+
+.commandGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.15rem;
+}
+
+.commandCard {
+  padding: 1.35rem;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(145deg, rgba(8, 12, 34, 0.92), rgba(6, 9, 24, 0.84));
+  box-shadow: 0 25px 50px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(18px);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.commandCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(101, 244, 179, 0.25);
+  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.55);
+}
+
+.commandCard h3 {
+  margin: 0.42rem 0 1rem;
+  font-size: 1.12rem;
+}
+
+.commandList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.commandList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.commandList strong {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.commandList span {
+  text-align: right;
+}
+
+.commandMetricRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.commandMetricRow div {
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.commandMetricRow span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.58);
+  margin-bottom: 0.35rem;
+}
+
+.commandMetricRow strong {
+  font-size: 1.15rem;
+}
+
+.commandBody {
+  margin: 0 0 0.85rem;
+  color: rgba(244, 248, 255, 0.86);
+  line-height: 1.6;
+}
+
+.commandTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.commandTags span {
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.82rem;
+}
+
+.commandStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.commandStack strong {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.recommendationList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recommendationItem {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.recommendationItem strong {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.recommendationItem p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.5;
+}
+
+.recommendationInfo {
+  border-color: rgba(86, 202, 255, 0.25);
+}
+
+.recommendationWarning {
+  border-color: rgba(255, 195, 87, 0.28);
+}
+
+.recommendationCritical {
+  border-color: rgba(255, 95, 109, 0.3);
+}
+
+.guestAlertCard {
+  border-color: rgba(255, 95, 109, 0.35);
+  background: linear-gradient(145deg, rgba(40, 7, 16, 0.9), rgba(20, 8, 28, 0.82));
+}
+
+.alertMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.alertMetaGrid div {
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.alertMetaGrid span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.62);
+  margin-bottom: 0.3rem;
+}
+
+.alertMetaGrid strong {
+  font-size: 0.98rem;
+}
+
+.assignmentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.assignmentItem {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.assignmentItem strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.assignmentItem p {
+  margin: 0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.84rem;
+}
+
+.assignmentEmpty {
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.departmentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.departmentList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.departmentList span {
+  color: rgba(255, 255, 255, 0.72);
+  text-align: right;
+}
+
+@media (max-width: 920px) {
+  .assignmentItem {
+    grid-template-columns: 1fr;
+  }
+
+  .departmentList li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .departmentList span {
+    text-align: left;
   }
 }

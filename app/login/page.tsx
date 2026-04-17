@@ -16,6 +16,8 @@ export default function LoginPage() {
   const [role, setRole] = useState<UserRole>("guest");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [roomNumber, setRoomNumber] = useState("");
+  const [department, setDepartment] = useState("General Response");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +37,8 @@ export default function LoginPage() {
         await setDoc(doc(db, "users", credential.user.uid), {
           role,
           email,
+          roomNumber: role === "guest" ? roomNumber || "Room pending" : undefined,
+          department: role === "staff" ? department : undefined,
           createdAt: new Date().toISOString()
         });
       } else {
@@ -115,6 +119,29 @@ export default function LoginPage() {
           <span>Password</span>
           <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
         </label>
+
+        {mode === "signup" && role === "guest" && (
+          <label>
+            <span>Room Number</span>
+            <input
+              value={roomNumber}
+              onChange={(e) => setRoomNumber(e.target.value)}
+              placeholder="e.g. 304"
+            />
+          </label>
+        )}
+
+        {mode === "signup" && role === "staff" && (
+          <label>
+            <span>Department</span>
+            <select value={department} onChange={(e) => setDepartment(e.target.value)}>
+              <option value="General Response">General Response</option>
+              <option value="Fire Response">Fire Response</option>
+              <option value="Medical Response">Medical Response</option>
+              <option value="Security Police">Security Police</option>
+            </select>
+          </label>
+        )}
 
         <button className={styles.submit} disabled={loading || !isFirebaseReady}>
           {loading ? "Securing access..." : mode === "login" ? "Log In" : "Sign Up"}

@@ -6,13 +6,13 @@ import { Incident, UserRole } from "@/types";
 interface IncidentListProps {
   incidents: Incident[];
   role: UserRole;
-  onAssign: (incident: Incident) => Promise<void>;
   onResolve: (incident: Incident) => Promise<void>;
   onSelect?: (incident: Incident) => void;
   selectedId?: string;
 }
 
-const priorityClass = {
+const priorityClass: Record<Incident["severity"], string> = {
+  critical: styles.priorityHigh,
   high: styles.priorityHigh,
   medium: styles.priorityMedium,
   low: styles.priorityLow
@@ -21,7 +21,6 @@ const priorityClass = {
 export default function IncidentList({
   incidents,
   role,
-  onAssign,
   onResolve,
   onSelect,
   selectedId
@@ -46,28 +45,40 @@ export default function IncidentList({
           >
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <strong>{incident.type.toUpperCase()}</strong>
-              <span className={priorityClass[incident.priority]}>● {incident.priority}</span>
+              <span className={priorityClass[incident.severity]}>● {incident.severity}</span>
             </div>
             <p>
+              <strong>Source:</strong> {incident.source.toUpperCase()}
+            </p>
+            <p>
               <strong>Guest Email:</strong> {getGuestEmail(incident)}
+            </p>
+            <p>
+              <strong>Guest Room:</strong> {incident.guestRoomNumber ?? "Room not available"}
+            </p>
+            {incident.assignedStaffName && (
+              <p>
+                <strong>Assigned Staff:</strong> {incident.assignedStaffName}
+                {incident.assignedStaffDepartment ? ` (${incident.assignedStaffDepartment})` : ""}
+              </p>
+            )}
+            {incident.assignedStaffEmail && (
+              <p>
+                <strong>Staff Email:</strong> {incident.assignedStaffEmail}
+              </p>
+            )}
+            <p>
+              <strong>People affected:</strong> {incident.affectedPeople ?? 0}
             </p>
             <p>{incident.notes ?? "No additional details"}</p>
             <small>{new Date(incident.createdAt).toLocaleString()}</small>
             <footer style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
-              {role !== "guest" && incident.status !== "resolved" && (
-                <button
-                  className={styles.secondaryButton}
-                  onClick={() => onAssign(incident)}
-                >
-                  {incident.assignedStaffId ? "Reassign" : "Accept"}
-                </button>
-              )}
-              {role !== "guest" && (
+              {role === "admin" && incident.status !== "resolved" && (
                 <button
                   className={styles.primaryButton}
                   onClick={() => onResolve(incident)}
                 >
-                  {incident.status === "resolved" ? "Reopen" : "Resolve"}
+                  Close Incident
                 </button>
               )}
             </footer>

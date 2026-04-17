@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/hooks/useIncidents";
 import EmergencyPanel from "@/components/guest/EmergencyPanel";
 import IncidentList from "@/components/shared/IncidentList";
+import CommandCenterPanel from "@/components/shared/CommandCenterPanel";
 import LiveMap from "@/components/LiveMap";
 import AIChatPanel from "@/components/guest/AIChatPanel";
 import SuggestionPanel from "@/components/admin/SuggestionPanel";
@@ -14,7 +15,7 @@ import ConversationPanel from "@/components/staff/ConversationPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
 import { ROLE_LABELS, DEFAULT_LOCATION, MOCK_EXITS } from "@/lib/constants";
 import { isFirebaseReady } from "@/lib/firebase";
-import { Incident, IncidentType, LocationPoint } from "@/types";
+import { Incident, IncidentSource, IncidentType, LocationPoint } from "@/types";
 
 const ROLE_GLYPHS = {
   guest: "🌐",
@@ -26,6 +27,7 @@ const INCIDENT_GUIDANCE: Record<IncidentType | "default", string[]> = {
   fire: ["Stay low and cover your mouth with cloth.", "Close doors behind you to slow smoke.", "Use stairs, never elevators."],
   medical: ["Move the injured person away from immediate danger.", "Apply pressure to bleeding wounds.", "Keep the guest warm and conscious."],
   security: ["Stay out of sight and lock nearby doors.", "Do not confront the threat directly.", "Report suspicious descriptions to staff."],
+  theft: ["Preserve the scene and avoid confrontation.", "Review camera feeds and access logs.", "Alert security and management immediately."],
   default: ["Stay calm and follow on-screen directions.", "Share accurate details with responders.", "Keep exits and corridors clear."]
 };
 
@@ -56,7 +58,7 @@ const metersBetween = (pointA: LocationPoint, pointB: LocationPoint) => {
 export default function DashboardPage() {
   const router = useRouter();
   const { user, role, loading, logout } = useAuth();
-  const { incidents, rawIncidents, messages, createIncident, assignIncident, updateStatus, persistSummary, sendChatMessage } =
+  const { incidents, rawIncidents, messages, createIncident, updateStatus, persistSummary, sendChatMessage } =
     useIncidents(role, user?.uid ?? undefined);
 
   const [selectedIncident, setSelectedIncident] = useState<Incident | undefined>(undefined);
@@ -67,6 +69,16 @@ export default function DashboardPage() {
   const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
   const activeIncident = useMemo(() => incidents.find((incident) => incident.status !== "resolved"), [incidents]);
+  const broadcastIncident = useMemo(
+    () =>
+      rawIncidents.find(
+        (incident) =>
+          incident.status !== "resolved" &&
+          incident.source !== "manual" &&
+          (incident.guestId === user?.uid || incident.source === "iot" || incident.source === "cctv")
+      ),
+    [rawIncidents, user?.uid]
+  );
 
   const statusLevel = useMemo(() => {
     if (!activeIncident) return "safe" as const;
@@ -108,7 +120,7 @@ export default function DashboardPage() {
 
     return incidents.slice(0, 4).map((incident) => ({
       id: incident.id,
-      label: `${incident.type.charAt(0).toUpperCase()}${incident.type.slice(1)} alert`,
+      label: `${incident.type.charAt(0).toUpperCase()}${incident.type.slice(1)} alert • ${incident.source}`,
       status: incident.status,
       time: formatTime(incident.updatedAt ?? incident.createdAt),
       notes: incident.notes ?? "Awaiting field report"
@@ -143,28 +155,17 @@ export default function DashboardPage() {
     );
   }, []);
 
-  const handleTrigger = async (type: Incident["type"], notes?: string) => {
+  const handleTrigger = async (type: IncidentType, source: IncidentSource, notes?: string) => {
     try {
-      await createIncident(type, geoLocation, notes);
+      await createIncident(type, source, geoLocation, notes);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Unable to trigger incident");
-    }
-  };
-
-  const handleAssign = async (incident: Incident) => {
-    if (!user?.uid) return;
-    try {
-      await assignIncident(incident.id, user.uid);
-      setSelectedIncident(incident);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Assignment failed");
     }
   };
 
   const handleResolve = async (incident: Incident) => {
     try {
       if (incident.status === "resolved") {
-        await updateStatus(incident.id, "pending");
         return;
       }
 
@@ -214,7 +215,7 @@ export default function DashboardPage() {
 
   const systemStatusLabel = ready ? "Live" : "Simulation";
   const activeIncidentLabel = activeIncident
-    ? `${activeIncident.type} • ${activeIncident.status.replace(/_/g, " ")}`
+    ? `${activeIncident.type} • ${activeIncident.source} • ${activeIncident.status.replace(/_/g, " ")}`
     : "No active incident";
 
   if (loading) {
@@ -287,6 +288,36 @@ export default function DashboardPage() {
             <div className={styles.full}>
               <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} />
             </div>
+            {broadcastIncident && (
+              <div className={styles.full}>
+                <div className={`${styles.card} ${styles.guestAlertCard}`}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <p className={styles.cardEyebrow}>Alert detected</p>
+                      <h3>
+                        {broadcastIncident.type.toUpperCase()} detected via {broadcastIncident.source.toUpperCase()}
+                      </h3>
+                    </div>
+                    <span className={styles.statusChip}>Live alert</span>
+                  </div>
+                  <p className={styles.safetyMessage}>{broadcastIncident.notes ?? "Follow on-screen instructions immediately."}</p>
+                  <div className={styles.alertMetaGrid}>
+                    <div>
+                      <span>Responder</span>
+                      <strong>{broadcastIncident.assignedStaffName ?? "Assigned responder"}</strong>
+                    </div>
+                    <div>
+                      <span>Department</span>
+                      <strong>{broadcastIncident.assignedStaffDepartment ?? "Emergency Response"}</strong>
+                    </div>
+                    <div>
+                      <span>Distance</span>
+                      <strong>{broadcastIncident.responderDistanceMeters ?? 0}m away</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className={styles.half}>
               <div className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -376,7 +407,6 @@ export default function DashboardPage() {
               <IncidentList
                 incidents={incidents}
                 role={role}
-                onAssign={handleAssign}
                 onResolve={handleResolve}
                 onSelect={setSelectedIncident}
                 selectedId={selectedIncident?.id}
@@ -399,7 +429,6 @@ export default function DashboardPage() {
                   messages={chatMessages}
                   nearestExit={staffNearestExit}
                   onSend={handleSendChat}
-                  onStatusChange={updateStatus}
                 />
               </div>
             </div>
@@ -409,10 +438,12 @@ export default function DashboardPage() {
         {role === "admin" && (
           <>
             <div className={styles.full}>
+              <CommandCenterPanel incidents={rawIncidents} activeIncident={selectedIncident ?? activeIncident} />
+            </div>
+            <div className={styles.full}>
               <IncidentList
                 incidents={rawIncidents}
                 role={role}
-                onAssign={handleAssign}
                 onResolve={handleResolve}
                 onSelect={setSelectedIncident}
                 selectedId={selectedIncident?.id}
