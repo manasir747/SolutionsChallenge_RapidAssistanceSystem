@@ -58,6 +58,13 @@ const ADMIN_NOTIFY_DEPARTMENTS = [
   "Local Authority Command"
 ] as const;
 
+const ADMIN_IOT_SIMULATIONS: Array<{ type: IncidentType; source: IncidentSource; label: string; hint: string }> = [
+  { type: "fire", source: "iot", label: "Sensor Fire", hint: "Heat / smoke spike from IoT sensor" },
+  { type: "medical", source: "iot", label: "Sensor Medical", hint: "Wearable emergency trigger" },
+  { type: "security", source: "iot", label: "Sensor Security", hint: "Unauthorized access sensor event" },
+  { type: "theft", source: "iot", label: "Sensor Theft", hint: "Asset tracking anomaly" }
+];
+
 type StaffOption = {
   id: string;
   email: string;
@@ -97,6 +104,7 @@ export default function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
   const [availableStaff, setAvailableStaff] = useState<StaffOption[]>([]);
+  const [simulatingIncidentType, setSimulatingIncidentType] = useState<IncidentType | null>(null);
   const ready = isFirebaseReady;
   const roleGlyph = ROLE_GLYPHS[role];
   const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
@@ -356,6 +364,17 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSimulateIotIncident = async (type: IncidentType, source: IncidentSource, hint: string) => {
+    setSimulatingIncidentType(type);
+    try {
+      await createIncident(type, source, DEFAULT_LOCATION, `Simulated ${source.toUpperCase()} emergency: ${hint}`);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Unable to simulate IoT emergency");
+    } finally {
+      setSimulatingIncidentType(null);
+    }
+  };
+
   const chatMessages = useMemo(() => {
     if (!selectedIncident) return [];
     return messages[selectedIncident.id] ?? [];
@@ -459,9 +478,13 @@ export default function DashboardPage() {
                 <div className={`${styles.card} ${styles.guestAlertCard}`}>
                   <div className={styles.cardHeader}>
                     <div>
-                      <p className={styles.cardEyebrow}>Alert detected</p>
+                      <p className={styles.cardEyebrow}>
+                        {broadcastIncident.source === "manual" ? "Alert detected" : "Sensor alert detected"}
+                      </p>
                       <h3>
-                        {broadcastIncident.type.toUpperCase()} detected via {broadcastIncident.source.toUpperCase()}
+                        {broadcastIncident.source === "manual"
+                          ? `${broadcastIncident.type.toUpperCase()} detected via ${broadcastIncident.source.toUpperCase()}`
+                          : `Sensors reported ${broadcastIncident.type.toUpperCase()} emergency`}
                       </h3>
                     </div>
                     <span className={styles.statusChip}>Live alert</span>
@@ -614,6 +637,38 @@ export default function DashboardPage() {
             <div className={styles.adminGrid}>
               <div className={styles.adminPrimary}>
                 <CommandCenterPanel incidents={activeIncidents} activeIncident={activeIncident} />
+                <div className={`${styles.card} ${styles.adminSimulationCard}`}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <p className={styles.cardEyebrow}>Simulation Lab</p>
+                      <h3>Simulate IoT Emergencies</h3>
+                    </div>
+                    <span className={styles.signalBadge}>Admin only</span>
+                  </div>
+                  <p className={styles.commandBody}>
+                    Run sensor-based incident drills without physical IoT hardware. Simulated alerts follow the same dispatch and
+                    response pipeline as live incidents.
+                  </p>
+                  <div className={styles.adminSimulationGrid}>
+                    {ADMIN_IOT_SIMULATIONS.map((simulation) => (
+                      <button
+                        key={`${simulation.source}-${simulation.type}`}
+                        className={styles.adminSimulationButton}
+                        type="button"
+                        onClick={() => void handleSimulateIotIncident(simulation.type, simulation.source, simulation.hint)}
+                        disabled={Boolean(simulatingIncidentType)}
+                      >
+                        <strong>{simulation.label}</strong>
+                        <span>{simulation.hint}</span>
+                        <small>
+                          {simulatingIncidentType === simulation.type
+                            ? "Dispatching simulation..."
+                            : "Create simulated incident"}
+                        </small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className={styles.sectionHeader}>
                   <div>
                     <h2>{adminIncidentView === "closed" ? "Closed incidents" : "Active incidents"}</h2>
