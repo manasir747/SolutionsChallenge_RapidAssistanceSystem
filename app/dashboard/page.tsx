@@ -131,7 +131,12 @@ export default function DashboardPage() {
     [rawIncidents, user?.uid]
   );
 
-  const guestStatusIncident = guestActiveIncident ?? activeIncident;
+  const guestTrackedIncident = useMemo(
+    () => guestActiveIncident ?? broadcastIncident,
+    [guestActiveIncident, broadcastIncident]
+  );
+
+  const guestStatusIncident = guestTrackedIncident ?? activeIncident;
 
   const statusLevel = useMemo(() => {
     if (!guestStatusIncident) return "safe" as const;
@@ -145,11 +150,11 @@ export default function DashboardPage() {
   }, [guestStatusIncident]);
 
   const responderLocation = useMemo(() => {
-    if (!guestActiveIncident) return undefined;
-    const distance = guestActiveIncident.responderDistanceMeters ?? 180;
-    const referencePoint = guestActiveIncident.location ?? geoLocation;
+    if (!guestTrackedIncident) return undefined;
+    const distance = guestTrackedIncident.responderDistanceMeters ?? 180;
+    const referencePoint = guestTrackedIncident.location ?? geoLocation;
     return projectPointByMeters(referencePoint, Math.max(40, distance), 32);
-  }, [geoLocation, guestActiveIncident]);
+  }, [geoLocation, guestTrackedIncident]);
 
   const responderDistance = useMemo(() => {
     if (!responderLocation) return undefined;
@@ -471,7 +476,7 @@ export default function DashboardPage() {
         {role === "guest" && (
           <>
             <div className={styles.full}>
-              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} activeIncident={guestActiveIncident} />
+              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} activeIncident={guestTrackedIncident} />
             </div>
             {broadcastIncident && (
               <div className={styles.full}>
@@ -520,7 +525,7 @@ export default function DashboardPage() {
                   incidents={incidents}
                   guestLocation={geoLocation}
                   responderLocation={responderLocation}
-                  focusIncident={guestActiveIncident ?? selectedIncident}
+                  focusIncident={guestTrackedIncident ?? selectedIncident}
                 />
               </div>
             </div>
