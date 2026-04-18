@@ -331,14 +331,31 @@ export function useIncidents(role: UserRole, userId?: string) {
     [firestore, userId]
   );
 
-  const assignIncident = useCallback(async (incidentId: string, staffId: string) => {
-    if (!firestore) throw new Error("Firestore unavailable");
-    await updateDoc(doc(firestore, "incidents", incidentId), {
-      assignedStaffId: staffId,
-      status: "acknowledged",
-      updatedAt: serverTimestamp()
-    });
-  }, [firestore]);
+  const assignIncident = useCallback(
+    async (incidentId: string, staff: StaffProfile) => {
+      if (!firestore) throw new Error("Firestore unavailable");
+      await updateDoc(doc(firestore, "incidents", incidentId), {
+        assignedStaffId: staff.id,
+        assignedStaffName: staff.displayName ?? "Auto-assigned responder",
+        assignedStaffEmail: staff.email ?? "",
+        assignedStaffDepartment: staff.department ?? "General Response",
+        status: "acknowledged",
+        updatedAt: serverTimestamp()
+      });
+    },
+    [firestore]
+  );
+
+  const notifyDepartment = useCallback(
+    async (incidentId: string, department: string) => {
+      if (!firestore) throw new Error("Firestore unavailable");
+      await updateDoc(doc(firestore, "incidents", incidentId), {
+        notifiedDepartments: arrayUnion(department),
+        updatedAt: serverTimestamp()
+      });
+    },
+    [firestore]
+  );
 
   const updateStatus = useCallback(
     async (incidentId: string, status: Incident["status"]) => {
@@ -412,6 +429,7 @@ export function useIncidents(role: UserRole, userId?: string) {
     loading,
     createIncident,
     assignIncident,
+    notifyDepartment,
     updateStatus,
     persistSummary,
     sendChatMessage

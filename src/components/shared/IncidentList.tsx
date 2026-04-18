@@ -15,6 +15,15 @@ interface IncidentListProps {
   emptyMessage?: string;
   onDownloadSummary?: (incident: Incident) => void | Promise<void>;
   downloadingSummaryId?: string | null;
+  availableStaff?: Array<{
+    id: string;
+    email: string;
+    displayName?: string;
+    department?: string;
+  }>;
+  departmentOptions?: string[];
+  onReassign?: (incident: Incident, staffId: string) => Promise<void>;
+  onNotifyDepartment?: (incident: Incident, department: string) => Promise<void>;
 }
 
 const priorityClass: Record<Incident["severity"], string> = {
@@ -33,12 +42,20 @@ export default function IncidentList({
   title = "Active Incidents",
   emptyMessage = "No active incidents.",
   onDownloadSummary,
-  downloadingSummaryId
+  downloadingSummaryId,
+  availableStaff = [],
+  departmentOptions = [],
+  onReassign,
+  onNotifyDepartment
 }: IncidentListProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [confirmIncident, setConfirmIncident] = useState<Incident | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [resolvedIds, setResolvedIds] = useState<Record<string, boolean>>({});
+  const [selectedStaffId, setSelectedStaffId] = useState<Record<string, string>>({});
+  const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [notifyingKey, setNotifyingKey] = useState<string | null>(null);
 
   const getGuestEmail = (incident: Incident) => {
     return incident.guestEmail || "Email not available";
@@ -71,6 +88,31 @@ export default function IncidentList({
     document.body.style.overflow = "";
     return undefined;
   }, [confirmIncident]);
+
+  const handleAssign = async (incident: Incident) => {
+    const staffId = selectedStaffId[incident.id] ?? incident.assignedStaffId ?? "";
+    if (!staffId || !onReassign) return;
+
+    setAssigningId(incident.id);
+    try {
+      await onReassign(incident, staffId);
+    } finally {
+      setAssigningId(null);
+    }
+  };
+
+  const handleNotify = async (incident: Incident) => {
+    const department = selectedDepartment[incident.id] ?? "";
+    if (!department || !onNotifyDepartment) return;
+
+    const actionKey = `${incident.id}:${department}`;
+    setNotifyingKey(actionKey);
+    try {
+      await onNotifyDepartment(incident, department);
+    } finally {
+      setNotifyingKey(null);
+    }
+  };
 
   return (
     <div className={`${styles.card} ${styles.full}`}>
@@ -161,6 +203,95 @@ export default function IncidentList({
                 </button>
               )}
             </footer>
+            {role === "admin" && (
+              <div
+                className={styles.adminIncidentControls}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <div className={styles.adminIncidentControlRow}>
+                  <label htmlFor={`assign-${incident.id}`}>Reassign response staff</label>
+                  <div className={styles.adminIncidentControlInline}>
+                    {(() => {
+                      const currentStaffId = selectedStaffId[incident.id] ?? incident.assignedStaffId ?? "";
+                      const staffExists = availableStaff.some((staff) => staff.id === currentStaffId);
+
+                      return (
+                        <>
+                          <select
+                            id={`assign-${incident.id}`}
+                            className={styles.adminIncidentSelect}
+                            value={currentStaffId}
+                            onChange={(event) =>
+                              setSelectedStaffId((prev) => ({
+                                ...prev,
+                                [incident.id]: event.target.value
+                              }))
+                            }
+                          >
+                            <option value="">Select staff email</option>
+                            {availableStaff.map((staff) => (
+                              <option key={staff.id} value={staff.id}>
+                                {staff.email}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            className={styles.secondaryButton}
+                            type="button"
+                            onClick={() => void handleAssign(incident)}
+                            disabled={assigningId === incident.id || !currentStaffId || !staffExists}
+                          >
+                            {assigningId === incident.id ? "Assigning..." : "Assign"}
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  {availableStaff.length === 0 && (
+                    <small className={styles.adminIncidentHint}>No staff accounts available for reassignment.</small>
+                  )}
+                </div>
+
+                <div className={styles.adminIncidentControlRow}>
+                  <label htmlFor={`notify-${incident.id}`}>Notify more departments</label>
+                  <div className={styles.adminIncidentControlInline}>
+                    <select
+                      id={`notify-${incident.id}`}
+                      className={styles.adminIncidentSelect}
+                      value={selectedDepartment[incident.id] ?? ""}
+                      onChange={(event) =>
+                        setSelectedDepartment((prev) => ({
+                          ...prev,
+                          [incident.id]: event.target.value
+                        }))
+                      }
+                    >
+                      <option value="">Select department</option>
+                      {departmentOptions.map((department) => (
+                        <option key={department} value={department}>
+                          {department}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      className={styles.secondaryButton}
+                      type="button"
+                      onClick={() => void handleNotify(incident)}
+                      disabled={
+                        !selectedDepartment[incident.id] ||
+                        notifyingKey === `${incident.id}:${selectedDepartment[incident.id]}`
+                      }
+                    >
+                      {notifyingKey === `${incident.id}:${selectedDepartment[incident.id]}` ? "Notifying..." : "Notify"}
+                    </button>
+                  </div>
+                  <small className={styles.adminIncidentHint}>
+                    Currently notified: {(incident.notifiedDepartments ?? []).join(", ") || "No departments notified yet"}
+                  </small>
+                </div>
+              </div>
+            )}
           </article>
         ))}
         {incidents.length === 0 && <p>{emptyMessage}</p>}

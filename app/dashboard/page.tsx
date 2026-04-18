@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import styles from "@/styles/dashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/hooks/useIncidents";
@@ -14,7 +15,7 @@ import SuggestionPanel from "@/components/admin/SuggestionPanel";
 import ConversationPanel from "@/components/staff/ConversationPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
 import { ROLE_LABELS, DEFAULT_LOCATION, MOCK_EXITS } from "@/lib/constants";
-import { isFirebaseReady } from "@/lib/firebase";
+import { db, isFirebaseReady } from "@/lib/firebase";
 import { Incident, IncidentSource, IncidentType, LocationPoint } from "@/types";
 
 const ROLE_GLYPHS = {
@@ -48,6 +49,22 @@ const STATUS_COPY = {
 
 const EMERGENCY_CONTACT = "112";
 
+const ADMIN_NOTIFY_DEPARTMENTS = [
+  "Police Department",
+  "Fire Department",
+  "Emergency Medical Services",
+  "Hospital Liaison",
+  "Hotel Security Department",
+  "Local Authority Command"
+] as const;
+
+type StaffOption = {
+  id: string;
+  email: string;
+  displayName?: string;
+  department?: string;
+};
+
 const metersBetween = (pointA: LocationPoint, pointB: LocationPoint) => {
   const latDiff = (pointB.lat - pointA.lat) * 111_000;
   const lngDiff =
@@ -71,7 +88,7 @@ const projectPointByMeters = (origin: LocationPoint, distanceMeters: number, bea
 export default function DashboardPage() {
   const router = useRouter();
   const { user, role, loading, logout } = useAuth();
-  const { incidents, rawIncidents, messages, createIncident, updateStatus, persistSummary, sendChatMessage } =
+  const { incidents, rawIncidents, messages, createIncident, assignIncident, notifyDepartment, updateStatus, persistSummary, sendChatMessage } =
     useIncidents(role, user?.uid ?? undefined);
 
   const [selectedIncident, setSelectedIncident] = useState<Incident | undefined>(undefined);
@@ -79,6 +96,7 @@ export default function DashboardPage() {
   const [geoLocation, setGeoLocation] = useState<LocationPoint>(DEFAULT_LOCATION);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
+  const [availableStaff, setAvailableStaff] = useState<StaffOption[]>([]);
   const ready = isFirebaseReady;
   const roleGlyph = ROLE_GLYPHS[role];
   const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
@@ -206,6 +224,39 @@ export default function DashboardPage() {
     );
   }, []);
 
+  useEffect(() => {
+    if (role !== "admin" || !db) {
+      setAvailableStaff([]);
+      return;
+    }
+
+    const staffQuery = query(collection(db, "users"), where("role", "==", "staff"));
+    const unsubscribe = onSnapshot(staffQuery, (snapshot) => {
+      const nextStaff = snapshot.docs
+        .map((docSnap) => {
+          const data = docSnap.data() as {
+            email?: string;
+            displayName?: string;
+            department?: string;
+            staffType?: string;
+            team?: string;
+          };
+          return {
+            id: docSnap.id,
+            email: data.email ?? "",
+            displayName: data.displayName,
+            department: data.department ?? data.staffType ?? data.team ?? "General Response"
+          };
+        })
+        .filter((staff) => staff.email)
+        .sort((left, right) => left.email.localeCompare(right.email));
+
+      setAvailableStaff(nextStaff);
+    });
+
+    return () => unsubscribe();
+  }, [role]);
+
   const handleTrigger = async (type: IncidentType, source: IncidentSource, notes?: string) => {
     try {
       await createIncident(type, source, geoLocation, notes);
@@ -275,6 +326,33 @@ export default function DashboardPage() {
       window.alert(err instanceof Error ? err.message : "Unable to generate summary PDF.");
     } finally {
       setDownloadingIncidentId(null);
+    }
+  };
+
+  const handleReassignIncident = async (incident: Incident, staffId: string) => {
+    const selectedStaff = availableStaff.find((staff) => staff.id === staffId);
+    if (!selectedStaff) {
+      setErrorMessage("Selected staff member is unavailable.");
+      return;
+    }
+
+    try {
+      await assignIncident(incident.id, {
+        id: selectedStaff.id,
+        email: selectedStaff.email,
+        displayName: selectedStaff.displayName,
+        department: selectedStaff.department
+      });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Unable to reassign incident");
+    }
+  };
+
+  const handleNotifyDepartment = async (incident: Incident, department: string) => {
+    try {
+      await notifyDepartment(incident.id, department);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Unable to notify department");
     }
   };
 
@@ -572,6 +650,10 @@ export default function DashboardPage() {
                   emptyMessage={adminIncidentView === "closed" ? "No closed incidents." : "No active incidents."}
                   onDownloadSummary={handleDownloadSummary}
                   downloadingSummaryId={downloadingIncidentId}
+                  availableStaff={availableStaff}
+                  departmentOptions={[...ADMIN_NOTIFY_DEPARTMENTS]}
+                  onReassign={handleReassignIncident}
+                  onNotifyDepartment={handleNotifyDepartment}
                 />
                 <div className={`${styles.card} ${styles.adminMapCard}`}>
                   <div className={styles.cardHeader}>

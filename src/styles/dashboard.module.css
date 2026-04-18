@@ -689,6 +689,54 @@
   margin-top: 0.85rem;
 }
 
+.adminIncidentControls {
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.adminIncidentControlRow {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.adminIncidentControlRow label {
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(186, 204, 229, 0.8);
+}
+
+.adminIncidentControlInline {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.adminIncidentSelect {
+  min-width: 220px;
+  flex: 1;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.adminIncidentSelect:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 1px;
+}
+
+.adminIncidentHint {
+  color: rgba(203, 213, 225, 0.7);
+  font-size: 0.77rem;
+}
+
 .commandSummary {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
