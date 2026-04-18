@@ -10,12 +10,14 @@ interface LiveMapProps {
   incidents: Incident[];
   focusIncident?: Incident;
   guestLocation?: LocationPoint;
+  responderLocation?: LocationPoint;
 }
 
-const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) => {
+const MapCanvas = ({ incidents, focusIncident, guestLocation, responderLocation }: LiveMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markers = useRef<google.maps.Marker[]>([]);
+  const paths = useRef<google.maps.Polyline[]>([]);
 
   const center = focusIncident?.location ?? guestLocation ?? DEFAULT_LOCATION;
 
@@ -44,8 +46,10 @@ const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) =>
   useEffect(() => {
     if (!mapInstance.current || typeof google === "undefined") return;
     markers.current.forEach((marker) => marker.setMap(null));
+    paths.current.forEach((path) => path.setMap(null));
 
     const nextMarkers: google.maps.Marker[] = [];
+    const nextPaths: google.maps.Polyline[] = [];
 
     incidents.forEach((incident) => {
       nextMarkers.push(
@@ -99,8 +103,40 @@ const MapCanvas = ({ incidents, focusIncident, guestLocation }: LiveMapProps) =>
       );
     }
 
+    if (responderLocation) {
+      nextMarkers.push(
+        new google.maps.Marker({
+          map: mapInstance.current!,
+          position: responderLocation,
+          title: "Help lead",
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: "#6ee7ff",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2
+          }
+        })
+      );
+    }
+
+    if (guestLocation && responderLocation) {
+      nextPaths.push(
+        new google.maps.Polyline({
+          map: mapInstance.current!,
+          path: [guestLocation, responderLocation],
+          geodesic: true,
+          strokeColor: "#6ee7ff",
+          strokeOpacity: 0.85,
+          strokeWeight: 3
+        })
+      );
+    }
+
     markers.current = nextMarkers;
-  }, [incidents, guestLocation]);
+    paths.current = nextPaths;
+  }, [guestLocation, incidents, responderLocation]);
 
   return <div ref={mapRef} className={styles.mapCanvas} />;
 };

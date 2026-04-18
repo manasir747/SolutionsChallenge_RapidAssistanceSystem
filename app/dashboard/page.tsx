@@ -55,6 +55,19 @@ const metersBetween = (pointA: LocationPoint, pointB: LocationPoint) => {
   return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
 };
 
+const projectPointByMeters = (origin: LocationPoint, distanceMeters: number, bearingDegrees: number): LocationPoint => {
+  const latStep = (distanceMeters * Math.cos((bearingDegrees * Math.PI) / 180)) / 111_000;
+  const lngStep =
+    (distanceMeters * Math.sin((bearingDegrees * Math.PI) / 180)) /
+    (111_000 * Math.cos((origin.lat * Math.PI) / 180));
+
+  return {
+    lat: origin.lat + latStep,
+    lng: origin.lng + lngStep,
+    label: "Responder route"
+  };
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, role, loading, logout } = useAuth();
@@ -73,6 +86,10 @@ export default function DashboardPage() {
   const activeIncidents = useMemo(() => incidents.filter((incident) => incident.status !== "resolved"), [incidents]);
   const closedIncidents = useMemo(() => incidents.filter((incident) => incident.status === "resolved"), [incidents]);
   const activeIncident = useMemo(() => activeIncidents[0], [activeIncidents]);
+  const guestActiveIncident = useMemo(() => {
+    if (!user?.uid) return undefined;
+    return activeIncidents.find((incident) => incident.guestId === user.uid);
+  }, [activeIncidents, user?.uid]);
   const visibleIncidents = useMemo(() => {
     if (role !== "admin") return activeIncidents;
     return adminIncidentView === "closed" ? closedIncidents : activeIncidents;
@@ -88,16 +105,30 @@ export default function DashboardPage() {
     [rawIncidents, user?.uid]
   );
 
+  const guestStatusIncident = guestActiveIncident ?? activeIncident;
+
   const statusLevel = useMemo(() => {
-    if (!activeIncident) return "safe" as const;
-    if (activeIncident.priority === "high" || activeIncident.type === "fire") return "critical" as const;
+    if (!guestStatusIncident) return "safe" as const;
+    if (guestStatusIncident.priority === "high" || guestStatusIncident.type === "fire") return "critical" as const;
     return "warning" as const;
-  }, [activeIncident]);
+  }, [guestStatusIncident]);
 
   const instructionSet = useMemo(() => {
-    if (!activeIncident) return INCIDENT_GUIDANCE.default;
-    return INCIDENT_GUIDANCE[activeIncident.type] ?? INCIDENT_GUIDANCE.default;
-  }, [activeIncident]);
+    if (!guestStatusIncident) return INCIDENT_GUIDANCE.default;
+    return INCIDENT_GUIDANCE[guestStatusIncident.type] ?? INCIDENT_GUIDANCE.default;
+  }, [guestStatusIncident]);
+
+  const responderLocation = useMemo(() => {
+    if (!guestActiveIncident) return undefined;
+    const distance = guestActiveIncident.responderDistanceMeters ?? 180;
+    const referencePoint = guestActiveIncident.location ?? geoLocation;
+    return projectPointByMeters(referencePoint, Math.max(40, distance), 32);
+  }, [geoLocation, guestActiveIncident]);
+
+  const responderDistance = useMemo(() => {
+    if (!responderLocation) return undefined;
+    return Math.round(metersBetween(geoLocation, responderLocation));
+  }, [geoLocation, responderLocation]);
 
   const nearestExit = useMemo(() => {
     if (!geoLocation) return null;
@@ -343,7 +374,7 @@ export default function DashboardPage() {
         {role === "guest" && (
           <>
             <div className={styles.full}>
-              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} />
+              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} activeIncident={guestActiveIncident} />
             </div>
             {broadcastIncident && (
               <div className={styles.full}>
@@ -384,7 +415,12 @@ export default function DashboardPage() {
                   </div>
                   <span className={styles.signalBadge}>Tracking</span>
                 </div>
-                <LiveMap incidents={incidents} guestLocation={geoLocation} focusIncident={selectedIncident} />
+                <LiveMap
+                  incidents={incidents}
+                  guestLocation={geoLocation}
+                  responderLocation={responderLocation}
+                  focusIncident={guestActiveIncident ?? selectedIncident}
+                />
               </div>
             </div>
             <div className={styles.half}>
@@ -407,6 +443,7 @@ export default function DashboardPage() {
                         ? `${nearestExit.label} • ${nearestExit.distance}m to your ${nearestExit.direction}`
                         : "Exits highlighted on map"}
                     </strong>
+                    {responderDistance ? <p>Help lead is currently {responderDistance}m away.</p> : null}
                   </div>
                   <button className={styles.secondaryButton} type="button" onClick={() => setSelectedIncident(incidents[0])}>
                     Focus map

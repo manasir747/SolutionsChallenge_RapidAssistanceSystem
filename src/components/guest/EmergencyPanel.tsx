@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "@/styles/dashboard.module.css";
 import { EMERGENCY_TYPES, INCIDENT_SOURCE_LABELS } from "@/lib/constants";
-import { IncidentSource, IncidentType, LocationPoint } from "@/types";
+import { Incident, IncidentSource, IncidentType, LocationPoint } from "@/types";
 
 interface EmergencyPanelProps {
   onTrigger: (type: IncidentType, source: IncidentSource, notes?: string) => Promise<void>;
   currentLocation?: LocationPoint;
+  activeIncident?: Incident;
 }
 
 type PanelState = "idle" | "confirm" | "sending" | "success";
@@ -19,6 +20,20 @@ const guidanceByType: Record<IncidentType, string> = {
   medical: "Keep the guest visible and clear a safe working area.",
   security: "Retain distance and share the last known location.",
   theft: "Preserve the scene and avoid confronting the suspect."
+};
+
+const nextStepsByType: Record<IncidentType, string[]> = {
+  fire: ["Move low and avoid elevators.", "Cover mouth and nose while moving.", "Wait at the assigned safe zone for responders."],
+  medical: ["Keep the patient visible and calm.", "Clear immediate space for responders.", "Share symptom updates when help arrives."],
+  security: ["Move away from threat direction.", "Stay in a lockable safe area.", "Share suspect details with responders."],
+  theft: ["Avoid touching evidence around the scene.", "Move to a safe monitored area.", "Share timeline and item details with security."]
+};
+
+const notifiedByType: Record<IncidentType, string[]> = {
+  fire: ["Fire Department", "Emergency Medical Services", "Police Department"],
+  medical: ["Emergency Medical Services", "Hospital Liaison"],
+  security: ["Hotel Security Department", "Police Department"],
+  theft: ["Hotel Security Department", "Police Department"]
 };
 
 const sourceTone: Record<IncidentSource, string> = {
@@ -34,7 +49,7 @@ type TriggerTarget = {
   hint: string;
 };
 
-export default function EmergencyPanel({ onTrigger, currentLocation }: EmergencyPanelProps) {
+export default function EmergencyPanel({ onTrigger, currentLocation, activeIncident }: EmergencyPanelProps) {
   const [selected, setSelected] = useState<TriggerTarget>({
     type: "fire",
     source: "manual",
@@ -105,6 +120,61 @@ export default function EmergencyPanel({ onTrigger, currentLocation }: Emergency
   };
 
   const isSending = panelState === "sending";
+  const incidentInProgress = activeIncident && activeIncident.status !== "resolved" ? activeIncident : undefined;
+
+  if (incidentInProgress) {
+    const etaMinutes = Math.max(1, Math.round((incidentInProgress.responderDistanceMeters ?? 180) / 85));
+    const dispatchTargets = incidentInProgress.notifiedDepartments?.length
+      ? incidentInProgress.notifiedDepartments
+      : notifiedByType[incidentInProgress.type];
+
+    return (
+      <div className={`${styles.card} ${styles.emergencyPad}`}>
+        <div className={styles.cardHeader}>
+          <div>
+            <p className={styles.cardEyebrow}>Guest response status</p>
+            <h3>Incident raised successfully</h3>
+          </div>
+          {currentLocation?.label && <span className={styles.rolePill}>{currentLocation.label}</span>}
+        </div>
+        <div className={`${styles.alertState} ${styles.alertSuccess}`}>
+          <p className={styles.alertHeading}>Live incident: {incidentInProgress.type.toUpperCase()}</p>
+          <strong>{incidentInProgress.status.replace(/_/g, " ")} • Help lead en route</strong>
+          <div className={styles.alertMeta}>
+            <div>
+              <span>Help lead</span>
+              <p>{incidentInProgress.assignedStaffName ?? "Auto-assigned responder"}</p>
+            </div>
+            <div>
+              <span>Distance</span>
+              <p>{incidentInProgress.responderDistanceMeters ?? 0}m away</p>
+            </div>
+            <div>
+              <span>ETA</span>
+              <p>{etaMinutes} min</p>
+            </div>
+          </div>
+          <p className={styles.alertSubtext}>{guidanceByType[incidentInProgress.type]}</p>
+          <div>
+            <p className={styles.cardEyebrow}>Next steps</p>
+            <ul className={styles.summaryList}>
+              {nextStepsByType[incidentInProgress.type].map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className={styles.cardEyebrow}>Notified teams</p>
+            <div className={styles.dispatchStrip}>
+              {dispatchTargets.map((team) => (
+                <span key={team}>{team}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.card} ${styles.emergencyPad}`}>
