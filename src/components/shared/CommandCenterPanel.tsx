@@ -49,6 +49,7 @@ export default function CommandCenterPanel({ incidents, activeIncident }: Comman
   const [recommendations, setRecommendations] = useState<RecommendationCard[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [offlineActive, setOfflineActive] = useState(false);
+  const [hasBuiltRecommendations, setHasBuiltRecommendations] = useState(false);
   const activeIncidents = useMemo(() => incidents.filter((incident) => incident.status !== "resolved"), [incidents]);
 
   const normalizeDetail = (value: string) =>
@@ -83,38 +84,36 @@ export default function CommandCenterPanel({ incidents, activeIncident }: Comman
     return undefined;
   }, []);
 
-  useEffect(() => {
-    const loadRecommendations = async () => {
-      if (!incidents.length) {
-        setRecommendations([]);
-        return;
-      }
+  const loadRecommendations = async () => {
+    if (!incidents.length) {
+      setRecommendations([]);
+      setHasBuiltRecommendations(true);
+      return;
+    }
 
-      setLoadingRecommendations(true);
-      try {
-        const response = await fetch("/api/ai/suggestions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ incidents })
-        });
+    setLoadingRecommendations(true);
+    setHasBuiltRecommendations(true);
+    try {
+      const response = await fetch("/api/ai/suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ incidents })
+      });
 
-        const data = (await response.json()) as { suggestions?: RecommendationCard[] };
-        setRecommendations((data.suggestions ?? []).slice(0, 3));
-      } catch {
-        const fallback: RecommendationCard[] = incidents.slice(0, 3).map((incident, index) => ({
-          id: `fallback-${index}`,
-          title: `${incident.type.toUpperCase()} response`,
-          detail: `Track ${incident.type} from ${INCIDENT_SOURCE_LABELS[incident.source]} and keep escalation ready.`,
-          severity: incident.severity === "critical" ? "critical" : "warning"
-        }));
-        setRecommendations(fallback);
-      } finally {
-        setLoadingRecommendations(false);
-      }
-    };
-
-    void loadRecommendations();
-  }, [incidents]);
+      const data = (await response.json()) as { suggestions?: RecommendationCard[] };
+      setRecommendations((data.suggestions ?? []).slice(0, 3));
+    } catch {
+      const fallback: RecommendationCard[] = incidents.slice(0, 3).map((incident, index) => ({
+        id: `fallback-${index}`,
+        title: `${incident.type.toUpperCase()} response`,
+        detail: `Track ${incident.type} from ${INCIDENT_SOURCE_LABELS[incident.source]} and keep escalation ready.`,
+        severity: incident.severity === "critical" ? "critical" : "warning"
+      }));
+      setRecommendations(fallback);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
 
   const latestIncident = activeIncident ?? activeIncidents[0];
   const activeAssignments = activeIncidents;
@@ -178,9 +177,16 @@ export default function CommandCenterPanel({ incidents, activeIncident }: Comman
 
         <div className={styles.summaryGrid}>
           <div>
-            <h3>Recommended actions</h3>
+            <div className={styles.cardHeader}>
+              <h3>Recommended actions</h3>
+              <button className={styles.secondaryButton} type="button" onClick={loadRecommendations} disabled={loadingRecommendations}>
+                {hasBuiltRecommendations ? "Rebuild Recommendations" : "Build Recommendations"}
+              </button>
+            </div>
             {loadingRecommendations ? (
               <p className={styles.commandBody}>Building recommendations...</p>
+            ) : !hasBuiltRecommendations ? (
+              <p className={styles.commandBody}>Click Build Recommendations to generate Gemini guidance.</p>
             ) : (
               <ul className={styles.summaryList}>
                 {recommendationItems.map((item) => (

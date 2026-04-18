@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "@/styles/dashboard.module.css";
 import { SuggestionCard } from "@/types";
 
@@ -8,6 +8,7 @@ export default function SuggestionPanel() {
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [hasBuilt, setHasBuilt] = useState(false);
 
   const normalizeDetail = (value: string) =>
     value
@@ -22,6 +23,7 @@ export default function SuggestionPanel() {
 
   const fetchSuggestions = async () => {
     setLoading(true);
+    setHasBuilt(true);
     try {
       const res = await fetch("/api/ai/suggestions", { method: "POST" });
       const data = await res.json();
@@ -33,19 +35,17 @@ export default function SuggestionPanel() {
     }
   };
 
-  useEffect(() => {
-    fetchSuggestions();
-  }, []);
-
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h3>Gemini Suggestions</h3>
         <button className={styles.secondaryButton} onClick={fetchSuggestions} disabled={loading}>
-          Refresh
+          {hasBuilt ? "Rebuild Suggestions" : "Build Suggestions"}
         </button>
       </div>
       <div className={styles.suggestionList}>
+        {!hasBuilt && <p>Click Build Suggestions to generate Gemini recommendations.</p>}
+        {hasBuilt && suggestions.length === 0 && !loading && <p>No suggestions yet.</p>}
         {suggestions.map((suggestion) => (
           <article key={suggestion.id} className={styles.suggestionItem}>
             <div className={styles.suggestionHeader}>
@@ -66,16 +66,11 @@ export default function SuggestionPanel() {
                   </p>
                 ))}
             </div>
-            <button
-              className={styles.ghostButton}
-              type="button"
-              onClick={() => toggleExpanded(suggestion.id)}
-            >
+            <button className={styles.ghostButton} type="button" onClick={() => toggleExpanded(suggestion.id)}>
               {expanded[suggestion.id] ? "Show less" : "Show more"}
             </button>
           </article>
         ))}
-        {suggestions.length === 0 && <p>No suggestions yet.</p>}
       </div>
     </div>
   );
