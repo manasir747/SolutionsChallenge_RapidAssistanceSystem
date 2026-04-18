@@ -7,6 +7,18 @@ import { SuggestionCard } from "@/types";
 export default function SuggestionPanel() {
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const normalizeDetail = (value: string) =>
+    value
+      .replace(/\*\*/g, "")
+      .replace(/#+\s*/g, "")
+      .replace(/\s+\n/g, "\n")
+      .trim();
+
+  const toggleExpanded = (id: string) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const fetchSuggestions = async () => {
     setLoading(true);
@@ -33,14 +45,34 @@ export default function SuggestionPanel() {
           Refresh
         </button>
       </div>
-      <div className={styles.incidentList}>
+      <div className={styles.suggestionList}>
         {suggestions.map((suggestion) => (
-          <article key={suggestion.id} className={styles.incidentItem}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <strong>{suggestion.title}</strong>
-              <span>{suggestion.severity.toUpperCase()}</span>
+          <article key={suggestion.id} className={styles.suggestionItem}>
+            <div className={styles.suggestionHeader}>
+              <strong className={styles.suggestionTitle}>{suggestion.title}</strong>
+              <span
+                className={`${styles.severityPill} ${styles[`severity${suggestion.severity.charAt(0).toUpperCase() + suggestion.severity.slice(1)}`]}`}
+              >
+                {suggestion.severity}
+              </span>
             </div>
-            <p>{suggestion.detail}</p>
+            <div className={expanded[suggestion.id] ? styles.detailExpanded : styles.detailClamp}>
+              {normalizeDetail(suggestion.detail)
+                .split(/\n+/)
+                .filter(Boolean)
+                .map((paragraph, index) => (
+                  <p key={`${suggestion.id}-${index}`} className={styles.detailText}>
+                    {paragraph}
+                  </p>
+                ))}
+            </div>
+            <button
+              className={styles.ghostButton}
+              type="button"
+              onClick={() => toggleExpanded(suggestion.id)}
+            >
+              {expanded[suggestion.id] ? "Show less" : "Show more"}
+            </button>
           </article>
         ))}
         {suggestions.length === 0 && <p>No suggestions yet.</p>}

@@ -11,6 +11,48 @@
   line-height: 1.55;
 }
 
+.adminShell {
+  background: radial-gradient(circle at 20% 20%, rgba(30, 64, 175, 0.15), transparent 55%),
+    linear-gradient(140deg, #05070f, #0b1220 70%, #0a1020);
+}
+
+.adminShell .card {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  box-shadow: none;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.adminShell .incidentItem,
+.adminShell .suggestionItem {
+  background: #0b1324;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  width: 100%;
+}
+
+.adminShell .incidentList {
+  width: 100%;
+}
+
+.adminShell .primaryButton {
+  background: #2563eb;
+  color: #f8fafc;
+  box-shadow: none;
+  border-radius: 10px;
+}
+
+.adminShell .primaryButton:hover:not(:disabled) {
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.35);
+}
+
+.adminShell .secondaryButton,
+.adminShell .ghostButton {
+  border-radius: 10px;
+}
+
 .shell::before,
 .shell::after {
   content: "";
@@ -198,6 +240,84 @@
   margin-top: 1rem;
 }
 
+.adminContainer {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+.adminGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .adminGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .adminGrid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+.adminPrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  grid-column: span 1;
+}
+
+.adminSecondary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+  .adminPrimary {
+    grid-column: span 8;
+  }
+
+  .adminSecondary {
+    grid-column: span 4;
+  }
+}
+
+.adminDebug {
+  border: 1px solid rgba(239, 68, 68, 0.8);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.sectionHeader p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.95rem;
+}
+
+.adminMapCard {
+  height: 320px;
+}
+
 @media (min-width: 768px) {
   .grid {
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -297,6 +417,10 @@
   gap: 0.85rem;
 }
 
+.adminShell .cardHeader {
+  margin-bottom: 1rem;
+}
+
 .cardEyebrow {
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -311,12 +435,318 @@
   gap: 1rem;
 }
 
+.adminShell .incidentList {
+  gap: 1rem;
+}
+
+.suggestionList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .incidentItem {
   padding: 1.15rem 1.2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--card-soft);
   line-height: 1.6;
+}
+
+.suggestionItem {
+  padding: 1.1rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 14, 30, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.suggestionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.suggestionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.severityPill {
+  padding: 0.18rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.severityInfo {
+  color: #77c6ff;
+  background: rgba(119, 198, 255, 0.16);
+  border: 1px solid rgba(119, 198, 255, 0.35);
+}
+
+.severityWarning {
+  color: #ffc357;
+  background: rgba(255, 195, 87, 0.16);
+  border: 1px solid rgba(255, 195, 87, 0.35);
+}
+
+.severityCritical {
+  color: #ff6a6a;
+  background: rgba(255, 106, 106, 0.18);
+  border: 1px solid rgba(255, 106, 106, 0.35);
+}
+
+.detailClamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.detailExpanded {
+  display: block;
+}
+
+.detailText {
+  margin: 0.35rem 0;
+  color: rgba(239, 246, 255, 0.88);
+}
+
+.ghostButton {
+  align-self: flex-start;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.ghostButton:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.incidentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.incidentType {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.incidentSource {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.incidentBadge {
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.incidentKeyRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.incidentKeyRow span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.incidentKeyRow strong {
+  font-size: 0.95rem;
+  color: #f8fafc;
+}
+
+.incidentSecondaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.85rem;
+}
+
+.incidentResolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.65);
+  display: grid;
+  place-items: center;
+  z-index: 40;
+  padding: 1.5rem;
+}
+
+.confirmModal {
+  width: min(420px, 100%);
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 25px 45px rgba(2, 6, 23, 0.55);
+}
+
+.confirmModal h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.confirmModal p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.incidentMetaRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0.85rem 0;
+}
+
+.adminShell .incidentMetaRow {
+  gap: 0.65rem;
+}
+
+.incidentMetaItem {
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(9, 12, 28, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.incidentMetaItem span {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.incidentMetaItem strong {
+  font-size: 0.92rem;
+  color: #f2f6ff;
+}
+
+.incidentFooter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.commandSummary {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.summaryRow strong {
+  display: block;
+  font-size: 1.05rem;
+  color: #f8fafc;
+}
+
+.summaryRow span {
+  display: block;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.88rem;
+}
+
+.summaryLabel {
+  margin: 0 0 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.summaryDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.summaryGrid h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+
+.summaryList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  color: rgba(226, 232, 240, 0.85);
 }
 
 .incidentItem p {
@@ -329,15 +759,21 @@
 }
 
 .priorityHigh {
-  color: var(--danger);
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
 }
 
 .priorityMedium {
-  color: var(--warning);
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.35);
 }
 
 .priorityLow {
-  color: var(--success);
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
 }
 
 .mapCard {

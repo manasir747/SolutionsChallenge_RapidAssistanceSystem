@@ -23,8 +23,9 @@
     "@googlemaps/js-api-loader": "^2.0.2",
     "@googlemaps/react-wrapper": "^1.2.0",
     "firebase": "^12.11.0",
-    "next": "^14.2.35",
-    "package.json": "^2.0.1",
+    "next": "^16.2.4",
+    "package.json": "^0.0.0",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -32,8 +33,9 @@
     "@types/google.maps": "^3.58.1",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.3",
+    "eslint-config-next": "^16.2.4",
     "firebase-tools": "^15.12.0",
     "typescript": "^5.4.5"
   }

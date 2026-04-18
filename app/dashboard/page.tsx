@@ -62,13 +62,21 @@ export default function DashboardPage() {
     useIncidents(role, user?.uid ?? undefined);
 
   const [selectedIncident, setSelectedIncident] = useState<Incident | undefined>(undefined);
+  const [adminIncidentView, setAdminIncidentView] = useState<"active" | "closed">("active");
   const [geoLocation, setGeoLocation] = useState<LocationPoint>(DEFAULT_LOCATION);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
   const ready = isFirebaseReady;
   const roleGlyph = ROLE_GLYPHS[role];
   const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
-  const activeIncident = useMemo(() => incidents.find((incident) => incident.status !== "resolved"), [incidents]);
+  const activeIncidents = useMemo(() => incidents.filter((incident) => incident.status !== "resolved"), [incidents]);
+  const closedIncidents = useMemo(() => incidents.filter((incident) => incident.status === "resolved"), [incidents]);
+  const activeIncident = useMemo(() => activeIncidents[0], [activeIncidents]);
+  const visibleIncidents = useMemo(() => {
+    if (role !== "admin") return activeIncidents;
+    return adminIncidentView === "closed" ? closedIncidents : activeIncidents;
+  }, [activeIncidents, adminIncidentView, closedIncidents, role]);
   const broadcastIncident = useMemo(
     () =>
       rawIncidents.find(
@@ -134,10 +142,22 @@ export default function DashboardPage() {
   }, [loading, router, user]);
 
   useEffect(() => {
-    if (!selectedIncident && incidents.length) {
-      setSelectedIncident(incidents[0]);
+    if (!visibleIncidents.length) {
+      if (selectedIncident) {
+        setSelectedIncident(undefined);
+      }
+      return;
     }
-  }, [incidents, selectedIncident]);
+
+    const stillActiveSelection =
+      selectedIncident && visibleIncidents.some((incident) => incident.id === selectedIncident.id)
+        ? selectedIncident
+        : visibleIncidents[0];
+
+    if (!selectedIncident || selectedIncident.id !== stillActiveSelection.id) {
+      setSelectedIncident(stillActiveSelection);
+    }
+  }, [selectedIncident, visibleIncidents]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -177,7 +197,13 @@ export default function DashboardPage() {
       const summary = await summaryResponse.json();
       await persistSummary(incident.id, summary.summary);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Summary failed");
+      try {
+        await updateStatus(incident.id, "resolved");
+      } catch (fallbackErr) {
+        setErrorMessage(fallbackErr instanceof Error ? fallbackErr.message : "Summary failed");
+        return;
+      }
+      setErrorMessage("Summary unavailable. Incident marked resolved.");
     }
   };
 
@@ -187,6 +213,37 @@ export default function DashboardPage() {
       await sendChatMessage(selectedIncident.id, text);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Message failed");
+    }
+  };
+
+  const handleDownloadSummary = async (incident: Incident) => {
+    setDownloadingIncidentId(incident.id);
+    try {
+      const response = await fetch("/api/ai/summary/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ incident })
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        window.alert(payload.error ?? "Unable to generate summary PDF.");
+        return;
+      }
+
+      const pdfBlob = await response.blob();
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `incident-summary-${incident.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Unable to generate summary PDF.");
+    } finally {
+      setDownloadingIncidentId(null);
     }
   };
 
@@ -227,7 +284,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className={styles.shell}>
+    <main className={`${styles.shell} ${role === "admin" ? styles.adminShell : ""}`}>
       <div className={styles.topBar}>
         <div>
           <h1>Rapid Assistance</h1>
@@ -405,11 +462,13 @@ export default function DashboardPage() {
           <>
             <div className={styles.full}>
               <IncidentList
-                incidents={incidents}
+                incidents={activeIncidents}
                 role={role}
                 onResolve={handleResolve}
                 onSelect={setSelectedIncident}
                 selectedId={selectedIncident?.id}
+                onDownloadSummary={handleDownloadSummary}
+                downloadingSummaryId={downloadingIncidentId}
               />
             </div>
             <div className={styles.full}>
@@ -436,29 +495,67 @@ export default function DashboardPage() {
         )}
 
         {role === "admin" && (
-          <>
-            <div className={styles.full}>
-              <CommandCenterPanel incidents={rawIncidents} activeIncident={selectedIncident ?? activeIncident} />
+          <div className={styles.adminContainer}>
+            <div className={styles.adminGrid}>
+              <div className={styles.adminPrimary}>
+                <CommandCenterPanel incidents={activeIncidents} activeIncident={activeIncident} />
+                <div className={styles.sectionHeader}>
+                  <div>
+                    <h2>{adminIncidentView === "closed" ? "Closed incidents" : "Active incidents"}</h2>
+                    <p>
+                      {adminIncidentView === "closed"
+                        ? "Resolved incidents available for review and export."
+                        : "Urgent issues requiring immediate attention."}
+                    </p>
+                  </div>
+                  <div className={styles.viewToggle}>
+                    <button
+                      className={adminIncidentView === "active" ? styles.primaryButton : styles.secondaryButton}
+                      type="button"
+                      onClick={() => setAdminIncidentView("active")}
+                    >
+                      Active
+                    </button>
+                    <button
+                      className={adminIncidentView === "closed" ? styles.primaryButton : styles.secondaryButton}
+                      type="button"
+                      onClick={() => setAdminIncidentView("closed")}
+                    >
+                      Closed
+                    </button>
+                  </div>
+                </div>
+                <IncidentList
+                  incidents={visibleIncidents}
+                  role={role}
+                  onResolve={handleResolve}
+                  onSelect={setSelectedIncident}
+                  selectedId={selectedIncident?.id}
+                  title={adminIncidentView === "closed" ? "Closed Incidents" : "Active Incidents"}
+                  emptyMessage={adminIncidentView === "closed" ? "No closed incidents." : "No active incidents."}
+                  onDownloadSummary={handleDownloadSummary}
+                  downloadingSummaryId={downloadingIncidentId}
+                />
+                <div className={`${styles.card} ${styles.adminMapCard}`}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <p className={styles.cardEyebrow}>Field view</p>
+                      <h3>Live incident map</h3>
+                    </div>
+                  </div>
+                  <LiveMap incidents={activeIncidents} focusIncident={role === "admin" ? activeIncident : selectedIncident} />
+                </div>
+              </div>
+              <aside className={styles.adminSecondary}>
+                <div className={styles.sectionHeader}>
+                  <h2>Operations</h2>
+                  <p>System status and recommendations.</p>
+                </div>
+                <AnalyticsPanel incidents={rawIncidents} />
+                <SuggestionPanel />
+              </aside>
             </div>
-            <div className={styles.full}>
-              <IncidentList
-                incidents={rawIncidents}
-                role={role}
-                onResolve={handleResolve}
-                onSelect={setSelectedIncident}
-                selectedId={selectedIncident?.id}
-              />
-            </div>
-            <div className={styles.half}>
-              <AnalyticsPanel incidents={rawIncidents} />
-            </div>
-            <div className={styles.half}>
-              <SuggestionPanel />
-            </div>
-            <div className={styles.full}>
-              <LiveMap incidents={rawIncidents} focusIncident={selectedIncident} />
-            </div>
-          </>
+          </div>
         )}
       </section>
     </main>
