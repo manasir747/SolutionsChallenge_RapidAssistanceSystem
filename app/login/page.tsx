@@ -34,13 +34,21 @@ export default function LoginPage() {
       if (mode === "signup") {
         credential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(credential.user, { displayName: role.toUpperCase() });
-        await setDoc(doc(db, "users", credential.user.uid), {
+        const userProfile: Record<string, string> = {
           role,
           email,
-          roomNumber: role === "guest" ? roomNumber || "Room pending" : undefined,
-          department: role === "staff" ? department : undefined,
           createdAt: new Date().toISOString()
-        });
+        };
+
+        if (role === "guest") {
+          userProfile.roomNumber = roomNumber || "Room pending";
+        }
+
+        if (role === "staff") {
+          userProfile.department = department;
+        }
+
+        await setDoc(doc(db, "users", credential.user.uid), userProfile);
       } else {
         credential = await signInWithEmailAndPassword(auth, email, password);
       }
