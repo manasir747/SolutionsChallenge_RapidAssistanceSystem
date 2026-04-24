@@ -7,6 +7,7 @@ import styles from "@/styles/dashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/hooks/useIncidents";
 import EmergencyPanel from "@/components/guest/EmergencyPanel";
+import GuestDashboard from "@/components/guest/GuestDashboard";
 import IncidentList from "@/components/shared/IncidentList";
 import CommandCenterPanel from "@/components/shared/CommandCenterPanel";
 import LiveMap from "@/components/LiveMap";
@@ -105,6 +106,15 @@ export default function DashboardPage() {
   const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
   const [availableStaff, setAvailableStaff] = useState<StaffOption[]>([]);
   const [simulatingIncidentType, setSimulatingIncidentType] = useState<IncidentType | null>(null);
+  
+  // Simulation Command Center States
+  const [simulationMode, setSimulationMode] = useState<"live" | "sim">("sim");
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+  const [simSeverity, setSimSeverity] = useState<"low" | "medium" | "critical">("medium");
+  const [simLocation, setSimLocation] = useState("Floor 4, Wing B");
+  const [simSensitivity, setSimSensitivity] = useState(75);
+  const [simTimeline, setSimTimeline] = useState<{ time: string; event: string; status: string }[]>([]);
+  const [isSimRunning, setIsSimRunning] = useState(false);
   const ready = isFirebaseReady;
   const roleGlyph = ROLE_GLYPHS[role];
   const hasGuestMap = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
@@ -223,7 +233,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
+    
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setGeoLocation({
           lat: position.coords.latitude,
@@ -231,10 +242,22 @@ export default function DashboardPage() {
           label: "My location"
         });
       },
-      () => {
-        setGeoLocation(DEFAULT_LOCATION);
+      (error) => {
+        console.warn("Geolocation error:", error.code, error.message);
+        const msg = error.code === 1 
+          ? "Location access denied. Please enable GPS for tactical guidance." 
+          : "Satellite signal weak. Using estimated hotel coordinates.";
+        setErrorMessage(msg);
+        setGeoLocation(prev => prev || DEFAULT_LOCATION);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     );
+
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   useEffect(() => {
@@ -371,10 +394,26 @@ export default function DashboardPage() {
 
   const handleSimulateIotIncident = async (type: IncidentType, source: IncidentSource, hint: string) => {
     setSimulatingIncidentType(type);
+    setIsSimRunning(true);
+    setSimTimeline([
+      { time: "t+0s", event: "Sensor network triggered", status: "active" },
+      { time: "t+2s", event: "AI analysis in progress", status: "pending" }
+    ]);
+
     try {
-      await createIncident(type, source, DEFAULT_LOCATION, `Simulated ${source.toUpperCase()} emergency: ${hint}`);
+      await createIncident(type, source, DEFAULT_LOCATION, `[SIMULATION] ${source.toUpperCase()} emergency: ${hint} (Severity: ${simSeverity})`);
+      
+      setTimeout(() => {
+        setSimTimeline(prev => [
+          ...prev.map(t => ({ ...t, status: "completed" })),
+          { time: "t+5s", event: "Alerts broadcasted to guests", status: "completed" },
+          { time: "t+15s", event: "Responder dispatch initiated", status: "active" }
+        ]);
+      }, 2000);
+
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Unable to simulate IoT emergency");
+      setIsSimRunning(false);
     } finally {
       setSimulatingIncidentType(null);
     }
@@ -439,6 +478,12 @@ export default function DashboardPage() {
             <p>Active incident</p>
             <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
           </div>
+          <div className={styles.metaTile}>
+            <p>GPS Telemetry</p>
+            <div className={`${styles.metaStatus} ${geoLocation.lat !== DEFAULT_LOCATION.lat ? styles.statusLive : styles.statusWarning}`}>
+              {geoLocation.lat !== DEFAULT_LOCATION.lat ? "Satellite Lock" : "Standard Grid"}
+            </div>
+          </div>
           <div className={styles.userBadge}>
             <span className={styles.userBadgeIcon} aria-hidden="true">
               {roleGlyph}
@@ -474,131 +519,20 @@ export default function DashboardPage() {
 
       <section className={styles.grid}>
         {role === "guest" && (
-          <>
-            <div className={styles.full}>
-              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} activeIncident={guestTrackedIncident} />
-            </div>
-            {broadcastIncident && (
-              <div className={styles.full}>
-                <div className={`${styles.card} ${styles.guestAlertCard}`}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>
-                        {broadcastIncident.source === "manual" ? "Alert detected" : "Sensor alert detected"}
-                      </p>
-                      <h3>
-                        {broadcastIncident.source === "manual"
-                          ? `${broadcastIncident.type.toUpperCase()} detected via ${broadcastIncident.source.toUpperCase()}`
-                          : `Sensors reported ${broadcastIncident.type.toUpperCase()} emergency`}
-                      </h3>
-                    </div>
-                    <span className={styles.statusChip}>Live alert</span>
-                  </div>
-                  <p className={styles.safetyMessage}>{broadcastIncident.notes ?? "Follow on-screen instructions immediately."}</p>
-                  <div className={styles.alertMetaGrid}>
-                    <div>
-                      <span>Responder</span>
-                      <strong>{broadcastIncident.assignedStaffName ?? "Assigned responder"}</strong>
-                    </div>
-                    <div>
-                      <span>Department</span>
-                      <strong>{broadcastIncident.assignedStaffDepartment ?? "Emergency Response"}</strong>
-                    </div>
-                    <div>
-                      <span>Distance</span>
-                      <strong>{broadcastIncident.responderDistanceMeters ?? 0}m away</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className={styles.half}>
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div>
-                    <p className={styles.cardEyebrow}>Field View</p>
-                    <h3>Live incident map</h3>
-                  </div>
-                  <span className={styles.signalBadge}>Tracking</span>
-                </div>
-                <LiveMap
-                  incidents={incidents}
-                  guestLocation={geoLocation}
-                  responderLocation={responderLocation}
-                  focusIncident={guestTrackedIncident ?? selectedIncident}
-                />
-              </div>
-            </div>
-            <div className={styles.half}>
-              <div className={`${styles.card} ${styles.safetyPanel}`}>
-                 <div className={styles.cardHeader}>
-                  <div>
-                    <p className={styles.cardEyebrow}>Guidance</p>
-                    <h3>Safety actions</h3>
-                  </div>
-                  <span className={`${styles.statusChip} ${styles[`status${statusLevel.charAt(0).toUpperCase() + statusLevel.slice(1)}`]}`}>
-                    {STATUS_COPY[statusLevel].label}
-                  </span>
-                </div>
-                <p className={styles.safetyMessage}>{STATUS_COPY[statusLevel].message}</p>
-                <div className={styles.exitCallout}>
-                  <div>
-                    <p>Nearest exit</p>
-                    <strong>
-                      {nearestExit
-                        ? `${nearestExit.label} • ${nearestExit.distance}m to your ${nearestExit.direction}`
-                        : "Exits highlighted on map"}
-                    </strong>
-                    {responderDistance ? <p>Help lead is currently {responderDistance}m away.</p> : null}
-                  </div>
-                  <button className={styles.secondaryButton} type="button" onClick={() => setSelectedIncident(incidents[0])}>
-                    Focus map
-                  </button>
-                </div>
-                <ul className={styles.instructionList}>
-                  {instructionSet.map((tip) => (
-                    <li key={tip}>
-                      <span aria-hidden="true">●</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className={styles.full}>
-              <div className={styles.guestLowerGrid}>
-                <AIChatPanel role={role} />
-                <div className={`${styles.card} ${styles.timelinePane}`}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>Activity</p>
-                      <h3>Incident timeline</h3>
-                    </div>
-                    <span className={styles.signalBadge}>Live feed</span>
-                  </div>
-                  <ul className={styles.timelineList}>
-                    {timelineEvents.length ? (
-                      timelineEvents.map((event) => (
-                        <li key={event.id} className={styles.timelineItem}>
-                          <div className={styles.timelineBadge} />
-                          <div>
-                            <div className={styles.timelineMeta}>
-                              <strong>{event.label}</strong>
-                              <span>{event.time}</span>
-                            </div>
-                            <p>{event.notes}</p>
-                            <small>Status: {event.status.replace(/_/g, " ")}</small>
-                          </div>
-                        </li>
-                      ))
-                    ) : (
-                      <li className={styles.timelineEmpty}>No active incidents yet. Stay alert for instructions.</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </>
+          <div className={styles.full}>
+            <GuestDashboard 
+              user={user}
+              activeIncident={guestTrackedIncident}
+              geoLocation={geoLocation}
+              nearestExit={nearestExit}
+              responderDistance={responderDistance}
+              onTrigger={handleTrigger}
+              onResolve={handleResolve}
+              incidents={incidents}
+              timelineEvents={timelineEvents}
+              isSimulation={simulationMode === 'sim'}
+            />
+          </div>
         )}
 
         {role === "staff" && (
@@ -642,37 +576,126 @@ export default function DashboardPage() {
             <div className={styles.adminGrid}>
               <div className={styles.adminPrimary}>
                 <CommandCenterPanel incidents={activeIncidents} activeIncident={activeIncident} />
-                <div className={`${styles.card} ${styles.adminSimulationCard}`}>
+                <div className={`${styles.card} ${styles.simulationCommandCenter} ${simulationMode === 'sim' ? styles.modeSimActive : ''}`}>
                   <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>Simulation Lab</p>
-                      <h3>Simulate IoT Emergencies</h3>
+                    <div className={styles.ccHeaderMain}>
+                      <div className={styles.ccTitleGroup}>
+                        <p className={styles.cardEyebrow}>Primary Control Node</p>
+                        <h3>Simulation Command Center</h3>
+                        <p className={styles.ccSubtext}>Run intelligent emergency drills using IoT signals</p>
+                      </div>
+                      <div className={styles.ccHeaderControls}>
+                        <div className={styles.modeToggle}>
+                          <button 
+                            className={simulationMode === 'live' ? styles.activeMode : ''} 
+                            onClick={() => setSimulationMode('live')}
+                          >Live</button>
+                          <button 
+                            className={simulationMode === 'sim' ? styles.activeMode : ''} 
+                            onClick={() => setSimulationMode('sim')}
+                          >Simulation</button>
+                        </div>
+                        <div className={styles.ccStats}>
+                          <div className={styles.ccStatPill}><span>Sims Today</span> <strong>12</strong></div>
+                          <div className={styles.ccStatPill}><span>Avg Resp</span> <strong>4.2m</strong></div>
+                          <div className={styles.ccStatPill} style={{ color: '#5de0e6' }}><span>AI Readiness</span> <strong>98%</strong></div>
+                        </div>
+                      </div>
                     </div>
-                    <span className={styles.signalBadge}>Admin only</span>
                   </div>
-                  <p className={styles.commandBody}>
-                    Run sensor-based incident drills without physical IoT hardware. Simulated alerts follow the same dispatch and
-                    response pipeline as live incidents.
-                  </p>
+
                   <div className={styles.adminSimulationGrid}>
-                    {ADMIN_IOT_SIMULATIONS.map((simulation) => (
-                      <button
-                        key={`${simulation.source}-${simulation.type}`}
-                        className={styles.adminSimulationButton}
-                        type="button"
-                        onClick={() => void handleSimulateIotIncident(simulation.type, simulation.source, simulation.hint)}
-                        disabled={Boolean(simulatingIncidentType)}
-                      >
-                        <strong>{simulation.label}</strong>
-                        <span>{simulation.hint}</span>
-                        <small>
-                          {simulatingIncidentType === simulation.type
-                            ? "Dispatching simulation..."
-                            : "Create simulated incident"}
-                        </small>
-                      </button>
-                    ))}
+                    {ADMIN_IOT_SIMULATIONS.map((simulation) => {
+                      const isSelected = selectedScenario === simulation.type;
+                      return (
+                        <div 
+                          key={`${simulation.source}-${simulation.type}`}
+                          className={`${styles.scenarioCard} ${isSelected ? styles.scenarioExpanded : ''} ${styles[`scenario${simulation.type.charAt(0).toUpperCase() + simulation.type.slice(1)}`]}`}
+                          onClick={() => setSelectedScenario(isSelected ? null : simulation.type)}
+                        >
+                          <div className={styles.scenarioCardHeader}>
+                            <div className={styles.scenarioIcon}>
+                              {simulation.type === 'fire' && '🔥'}
+                              {simulation.type === 'medical' && '🏥'}
+                              {simulation.type === 'security' && '🛡️'}
+                              {simulation.type === 'theft' && '🎒'}
+                            </div>
+                            <div className={styles.scenarioInfo}>
+                              <strong>{simulation.label}</strong>
+                              <span>{simulation.hint}</span>
+                            </div>
+                          </div>
+
+                          {isSelected && (
+                            <div className={styles.scenarioControls} onClick={(e) => e.stopPropagation()}>
+                              <div className={styles.controlGroup}>
+                                <label>Severity Level</label>
+                                <div className={styles.severitySwitch}>
+                                  {['low', 'medium', 'critical'].map(s => (
+                                    <button 
+                                      key={s}
+                                      className={simSeverity === s ? styles[`active${s.charAt(0).toUpperCase() + s.slice(1)}`] : ''}
+                                      onClick={() => setSimSeverity(s as any)}
+                                    >{s}</button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className={styles.controlGroup}>
+                                <label>Target Location</label>
+                                <select value={simLocation} onChange={(e) => setSimLocation(e.target.value)} className={styles.ccSelect}>
+                                  <option>Floor 4, Wing B</option>
+                                  <option>Main Lobby</option>
+                                  <option>Conference Hall C</option>
+                                  <option>Staff Quarters</option>
+                                </select>
+                              </div>
+
+                              <div className={styles.controlGroup}>
+                                <label>Sensor Sensitivity ({simSensitivity}%)</label>
+                                <input 
+                                  type="range" 
+                                  min="0" max="100" 
+                                  value={simSensitivity} 
+                                  onChange={(e) => setSimSensitivity(parseInt(e.target.value))}
+                                  className={styles.ccSlider}
+                                />
+                              </div>
+
+                              <div className={styles.scenarioActions}>
+                                <button 
+                                  className={styles.primaryAction}
+                                  onClick={() => handleSimulateIotIncident(simulation.type, simulation.source, simulation.hint)}
+                                  disabled={isSimRunning}
+                                >
+                                  {isSimRunning ? 'Simulation Running...' : 'Simulate Now'}
+                                </button>
+                                <button className={styles.secondaryAction}>Preview AI Impact</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+
+                  {isSimRunning && (
+                    <div className={styles.simulationTimeline}>
+                      <div className={styles.timelineHeader}>
+                        <h4>Simulation Active: {selectedScenario?.toUpperCase()}</h4>
+                        <button onClick={() => setIsSimRunning(false)} className={styles.closeSim}>Terminate</button>
+                      </div>
+                      <div className={styles.timelineStrip}>
+                        {simTimeline.map((t, idx) => (
+                          <div key={idx} className={`${styles.timelineStep} ${styles[`step${t.status.charAt(0).toUpperCase() + t.status.slice(1)}`]}`}>
+                            <span className={styles.stepTime}>{t.time}</span>
+                            <span className={styles.stepEvent}>{t.event}</span>
+                            <div className={styles.stepDot}></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className={styles.sectionHeader}>
                   <div>
@@ -731,7 +754,10 @@ export default function DashboardPage() {
                   <p>System status and recommendations.</p>
                 </div>
                 <AnalyticsPanel incidents={rawIncidents} />
-                <SuggestionPanel />
+                <SuggestionPanel 
+                  activeScenario={selectedScenario} 
+                  severity={simSeverity} 
+                />
               </aside>
             </div>
           </div>
