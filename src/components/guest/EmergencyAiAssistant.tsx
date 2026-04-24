@@ -38,9 +38,13 @@ export default function EmergencyAiAssistant() {
         body: JSON.stringify({ prompt: text, role: "guest" })
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data.answer || "I apologize, I am having trouble connecting to the command center." }]);
+      if (data.error) {
+        setMessages(prev => [...prev, { role: "assistant", content: `System Alert: ${data.error}. Please refer to the tactical map for safe zones.` }]);
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: data.answer || "I apologize, I am having trouble connecting to the command center." }]);
+      }
     } catch (err) {
-      setMessages(prev => [...prev, { role: "assistant", content: "Error: Connection lost. Please follow manual evacuation signs." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "CRITICAL: Connection to Tactical AI lost. Proceed to nearest illuminated exit immediately." }]);
     } finally {
       setIsTyping(false);
     }
@@ -55,7 +59,14 @@ export default function EmergencyAiAssistant() {
             className={`${styles.chatBubble} ${msg.role === 'user' ? styles.userBubble : styles.assistantBubble}`}
           >
             {msg.role === 'assistant' && <Sparkles size={14} className={styles.bubbleIcon} />}
-            <div className={styles.bubbleText}>{msg.content}</div>
+            <div 
+              className={styles.bubbleText}
+              dangerouslySetInnerHTML={{ 
+                __html: msg.content
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/• (.*?)\n/g, '• $1<br/>')
+              }}
+            />
           </div>
         ))}
         {isTyping && (

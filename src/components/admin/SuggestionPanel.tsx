@@ -1,14 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Sparkles, Zap, ShieldCheck, Activity } from "lucide-react";
 import styles from "@/styles/dashboard.module.css";
 import { SuggestionCard } from "@/types";
 
-export default function SuggestionPanel() {
+interface SuggestionPanelProps {
+  activeScenario?: string | null;
+  severity?: "low" | "medium" | "critical";
+}
+
+export default function AICommandAssistant({ activeScenario, severity }: SuggestionPanelProps) {
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [hasBuilt, setHasBuilt] = useState(false);
+  const [autoApply, setAutoApply] = useState(false);
+
+  const scenarioInsights = useMemo(() => {
+    if (!activeScenario) return null;
+    const insights: Record<string, any> = {
+      fire: {
+        spread: "High via corridor ventilation",
+        alerts: "Evacuation + Fire Dept",
+        gap: "12% response delay predicted"
+      },
+      medical: {
+        spread: "Localized to incident zone",
+        alerts: "EMS + On-site Medical",
+        gap: "5m ETA for primary responder"
+      },
+      security: {
+        spread: "Medium risk of escalation",
+        alerts: "Police + Lockdown Protocol",
+        gap: "Secure perimeter in <2m"
+      },
+      theft: {
+        spread: "Low (Asset tracking active)",
+        alerts: "Security + Staff Awareness",
+        gap: "94% recovery probability"
+      }
+    };
+    return insights[activeScenario] || null;
+  }, [activeScenario]);
 
   const normalizeDetail = (value: string) =>
     value
@@ -36,16 +70,68 @@ export default function SuggestionPanel() {
   };
 
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${styles.aiCommandAssistant}`}>
       <div className={styles.cardHeader}>
-        <h3>Gemini Suggestions</h3>
-        <button className={styles.secondaryButton} onClick={fetchSuggestions} disabled={loading}>
-          {hasBuilt ? "Rebuild Suggestions" : "Build Suggestions"}
-        </button>
+        <div className={styles.aiTitleGroup}>
+          <Sparkles size={20} color="#38bdf8" />
+          <h3>AI Command Assistant</h3>
+        </div>
+        <div className={styles.aiHeaderActions}>
+          <div className={styles.confidenceMeter}>
+            <div className={styles.meterFill} style={{ width: '94%' }}></div>
+            <span>94% Confidence</span>
+          </div>
+        </div>
       </div>
+
+      {activeScenario && scenarioInsights && (
+        <div className={styles.scenarioIntelligence}>
+          <div className={styles.intelItem}>
+            <Activity size={14} />
+            <div>
+              <span>Expected Spread</span>
+              <strong>{scenarioInsights.spread}</strong>
+            </div>
+          </div>
+          <div className={styles.intelItem}>
+            <Zap size={14} />
+            <div>
+              <span>Recommended Alerts</span>
+              <strong>{scenarioInsights.alerts}</strong>
+            </div>
+          </div>
+          <div className={styles.intelItem}>
+            <ShieldCheck size={14} />
+            <div>
+              <span>Response Gap</span>
+              <strong>{scenarioInsights.gap}</strong>
+            </div>
+          </div>
+          
+          <div className={styles.autoApplyRow}>
+            <label className={styles.toggleSwitch}>
+              <input 
+                type="checkbox" 
+                checked={autoApply} 
+                onChange={(e) => setAutoApply(e.target.checked)} 
+              />
+              <span className={styles.toggleSlider}></span>
+            </label>
+            <span>Auto-apply AI recommendations</span>
+          </div>
+        </div>
+      )}
+
       <div className={styles.suggestionList}>
-        {!hasBuilt && <p>Click Build Suggestions to generate Gemini recommendations.</p>}
-        {hasBuilt && suggestions.length === 0 && !loading && <p>No suggestions yet.</p>}
+        {!hasBuilt && !activeScenario && (
+          <div className={styles.aiEmptyState}>
+            <p>Select a simulation scenario or click below for global intelligence.</p>
+            <button className={styles.secondaryButton} onClick={fetchSuggestions} disabled={loading}>
+              Build Global Recommendations
+            </button>
+          </div>
+        )}
+        
         {suggestions.map((suggestion) => (
           <article key={suggestion.id} className={styles.suggestionItem}>
             <div className={styles.suggestionHeader}>

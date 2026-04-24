@@ -16,7 +16,8 @@ import {
   Mic,
   Plus,
   X,
-  Focus
+  Focus,
+  Sparkles
 } from "lucide-react";
 import styles from "@/styles/guest-dashboard.module.css";
 import LiveMap from "@/components/LiveMap";
@@ -30,8 +31,10 @@ interface GuestDashboardProps {
   nearestExit: { label: string; distance: number; direction: string } | null;
   responderDistance?: number;
   onTrigger: (type: IncidentType, source: IncidentSource, notes?: string) => Promise<void>;
+  onResolve: (incident: Incident) => Promise<void>;
   incidents: Incident[];
   timelineEvents: any[];
+  isSimulation?: boolean;
 }
 
 const EMERGENCY_STEPS: Record<IncidentType | "default", string[]> = {
@@ -74,12 +77,15 @@ export default function GuestDashboard({
   nearestExit,
   responderDistance,
   onTrigger,
+  onResolve,
   incidents,
-  timelineEvents
+  timelineEvents,
+  isSimulation
 }: GuestDashboardProps) {
   const [fabOpen, setFabOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [showMap, setShowMap] = useState(true);
 
   const incidentType = activeIncident?.type || "default";
   const steps = EMERGENCY_STEPS[incidentType as keyof typeof EMERGENCY_STEPS] || EMERGENCY_STEPS.default;
@@ -93,6 +99,12 @@ export default function GuestDashboard({
   const handleTriggerWithFab = (type: IncidentType) => {
     onTrigger(type, "manual", `Emergency reported via Guest Command Center`);
     setFabOpen(false);
+  };
+
+  const handleResolveIncident = () => {
+    if (activeIncident) {
+      onResolve(activeIncident);
+    }
   };
 
   const toggleVoice = () => {
@@ -121,6 +133,13 @@ export default function GuestDashboard({
         {activeIncident && (
           <div className={styles.liveIncidentIndicator}>
             🚨 LIVE INCIDENT: {activeIncident.type.toUpperCase()}
+          </div>
+        )}
+
+        {isSimulation && (
+          <div className={styles.drillBadge}>
+            <Sparkles size={14} />
+            <span>Drill Protocol Active</span>
           </div>
         )}
 
@@ -177,7 +196,10 @@ export default function GuestDashboard({
           </button>
           
           {activeIncident && (
-            <button className={styles.secondaryActionBtn}>
+            <button 
+              className={styles.secondaryActionBtn}
+              onClick={handleResolveIncident}
+            >
               I AM SAFE / FALSE ALARM
             </button>
           )}
@@ -240,22 +262,25 @@ export default function GuestDashboard({
           <div className={styles.chipGroup}>
             <button className={styles.actionChip} onClick={() => setCurrentStep(0)}>Reset Steps</button>
             <button className={styles.actionChip} onClick={handleNextStep}>Next Step <ArrowRight size={14} /></button>
-            <button className={styles.actionChip}>Exit Map</button>
+            <button 
+              className={styles.actionChip}
+              onClick={() => setShowMap(!showMap)}
+            >
+              {showMap ? 'Exit Map' : 'Show Map'}
+            </button>
           </div>
         </div>
 
         {/* 4. LIVE MAP */}
-        <section className={styles.mapSection}>
-          <div className={styles.mapControls}>
-            <button className={styles.mapBtn}><Focus size={18} /> Focus Safe Zone</button>
-            <button className={styles.mapBtn}><Navigation size={18} /> Escape Route</button>
-          </div>
-          <LiveMap 
-            incidents={incidents}
-            guestLocation={geoLocation}
-            focusIncident={activeIncident}
-          />
-        </section>
+        {showMap && (
+          <section className={styles.mapSection}>
+            <LiveMap 
+              incidents={incidents}
+              guestLocation={geoLocation}
+              focusIncident={activeIncident}
+            />
+          </section>
+        )}
 
         {/* 5. LOWER GRID: AI ASSISTANT + TIMELINE */}
         <div className={styles.lowerGrid}>

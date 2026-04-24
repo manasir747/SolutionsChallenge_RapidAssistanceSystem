@@ -41,7 +41,19 @@ export async function POST(request: Request) {
 
   try {
     const answer = await callGemini(
-      `You are assisting a ${role} inside a hotel emergency. Respond with concise, calm guidance. Prompt: ${prompt}`
+      `MISSION CRITICAL: You are the AI Emergency Coordinator for a smart hotel. 
+      Target Audience: ${role}
+      Current Situation: Active Tactical Alert
+
+      FORMATTING RULES (STRICT):
+      1. Use clear BULLET POINTS (use the '•' character) for instructions.
+      2. Keep every sentence under 15 words.
+      3. Add double newlines between different points for visual clarity.
+      4. DO NOT use long paragraphs.
+      5. Start with a 1-sentence status summary in BOLD (use **text**).
+      6. Use ALL CAPS for critical warning words (e.g., DANGER, EXIT, STOP).
+
+      User Prompt: ${prompt}`
     );
 
     console.info("[/api/ai/chat] Gemini response ready", {

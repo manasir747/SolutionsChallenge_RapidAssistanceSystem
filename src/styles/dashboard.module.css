@@ -2119,3 +2119,462 @@
     text-align: left;
   }
 }
+
+/* --- SIMULATION COMMAND CENTER UPGRADE --- */
+.simulationCommandCenter {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modeSimActive {
+  box-shadow: 0 0 40px rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.ccHeaderMain {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.ccSubtext {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0.25rem 0 0;
+}
+
+.ccHeaderControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.modeToggle {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem;
+  border-radius: 12px;
+  display: flex;
+  gap: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modeToggle button {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modeToggle .activeMode {
+  background: #38bdf8;
+  color: #02040a;
+}
+
+.ccStats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.ccStatPill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ccStatPill span { color: rgba(255, 255, 255, 0.4); text-transform: uppercase; letter-spacing: 0.05em; }
+.ccStatPill strong { color: #fff; }
+
+.scenarioCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.scenarioCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.scenarioExpanded {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  cursor: default;
+}
+
+.scenarioCardHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.scenarioIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.scenarioInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.scenarioInfo strong { font-size: 1.05rem; color: #fff; }
+.scenarioInfo span { font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
+
+/* SCENARIO SPECIFIC COLORS */
+.scenarioFire.scenarioExpanded { border-color: #ff4d4d !important; box-shadow: 0 0 30px rgba(255, 77, 77, 0.1); }
+.scenarioMedical.scenarioExpanded { border-color: #38bdf8 !important; box-shadow: 0 0 30px rgba(56, 189, 248, 0.1); }
+.scenarioSecurity.scenarioExpanded { border-color: #fbbf24 !important; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1); }
+.scenarioTheft.scenarioExpanded { border-color: #10b981 !important; box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); }
+
+.scenarioControls {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.controlGroup label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.severitySwitch {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.25rem;
+  border-radius: 10px;
+  gap: 0.25rem;
+}
+
+.severitySwitch button {
+  flex: 1;
+  padding: 0.4rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.severitySwitch .activeLow { background: #10b981; color: #000; font-weight: 600; }
+.severitySwitch .activeMedium { background: #fbbf24; color: #000; font-weight: 600; }
+.severitySwitch .activeCritical { background: #ff4d4d; color: #fff; font-weight: 600; }
+
+.ccSelect {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.6rem;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.ccSlider {
+  width: 100%;
+  accent-color: #38bdf8;
+}
+
+.scenarioActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.primaryAction {
+  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  background: #38bdf8;
+  color: #02040a;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primaryAction:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+}
+
+.secondaryAction {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.simulationTimeline {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slideUp 0.4s ease-out;
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.timelineHeader h4 { margin: 0; color: #38bdf8; font-size: 0.9rem; letter-spacing: 0.05em; }
+
+.closeSim {
+  background: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d;
+  border: 1px solid rgba(255, 77, 77, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.timelineStrip {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: 0 1rem;
+}
+
+.timelineStrip::before {
+  content: "";
+  position: absolute;
+  top: 32px;
+  left: 2rem;
+  right: 2rem;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 0;
+}
+
+.timelineStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.stepTime { font-size: 0.7rem; color: rgba(255, 255, 255, 0.3); font-weight: 700; }
+.stepEvent { font-size: 0.75rem; color: #fff; text-align: center; max-width: 100px; }
+
+.stepDot {
+  width: 12px;
+  height: 12px;
+  background: #1e293b;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  margin-top: 0.25rem;
+}
+
+.stepActive .stepDot {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px #38bdf8;
+  animation: pulse 1.5s infinite;
+}
+
+.stepCompleted .stepDot {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.stepPending { opacity: 0.4; }
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+/* --- AI COMMAND ASSISTANT STYLES --- */
+.aiCommandAssistant {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.9) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+.aiTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.aiHeaderActions {
+  display: flex;
+  align-items: center;
+}
+
+.confidenceMeter {
+  background: rgba(255, 255, 255, 0.05);
+  height: 24px;
+  width: 120px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meterFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.3), rgba(56, 189, 248, 0.6));
+  z-index: 0;
+}
+
+.confidenceMeter span {
+  position: relative;
+  z-index: 1;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.scenarioIntelligence {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.intelItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.1);
+}
+
+.intelItem svg { color: #38bdf8; opacity: 0.8; }
+
+.intelItem div {
+  display: flex;
+  flex-direction: column;
+}
+
+.intelItem span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.05em;
+}
+
+.intelItem strong {
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.autoApplyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.autoApplyRow span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.toggleSwitch input { opacity: 0; width: 0; height: 0; }
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggleSlider { background-color: #38bdf8; }
+input:checked + .toggleSlider:before { transform: translateX(16px); }
+
+.aiEmptyState {
+  padding: 2rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.aiEmptyState p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.5;
+}
