@@ -7,6 +7,7 @@ import styles from "@/styles/dashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/hooks/useIncidents";
 import EmergencyPanel from "@/components/guest/EmergencyPanel";
+import GuestDashboard from "@/components/guest/GuestDashboard";
 import IncidentList from "@/components/shared/IncidentList";
 import CommandCenterPanel from "@/components/shared/CommandCenterPanel";
 import LiveMap from "@/components/LiveMap";
@@ -474,131 +475,18 @@ export default function DashboardPage() {
 
       <section className={styles.grid}>
         {role === "guest" && (
-          <>
-            <div className={styles.full}>
-              <EmergencyPanel onTrigger={handleTrigger} currentLocation={geoLocation} activeIncident={guestTrackedIncident} />
-            </div>
-            {broadcastIncident && (
-              <div className={styles.full}>
-                <div className={`${styles.card} ${styles.guestAlertCard}`}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>
-                        {broadcastIncident.source === "manual" ? "Alert detected" : "Sensor alert detected"}
-                      </p>
-                      <h3>
-                        {broadcastIncident.source === "manual"
-                          ? `${broadcastIncident.type.toUpperCase()} detected via ${broadcastIncident.source.toUpperCase()}`
-                          : `Sensors reported ${broadcastIncident.type.toUpperCase()} emergency`}
-                      </h3>
-                    </div>
-                    <span className={styles.statusChip}>Live alert</span>
-                  </div>
-                  <p className={styles.safetyMessage}>{broadcastIncident.notes ?? "Follow on-screen instructions immediately."}</p>
-                  <div className={styles.alertMetaGrid}>
-                    <div>
-                      <span>Responder</span>
-                      <strong>{broadcastIncident.assignedStaffName ?? "Assigned responder"}</strong>
-                    </div>
-                    <div>
-                      <span>Department</span>
-                      <strong>{broadcastIncident.assignedStaffDepartment ?? "Emergency Response"}</strong>
-                    </div>
-                    <div>
-                      <span>Distance</span>
-                      <strong>{broadcastIncident.responderDistanceMeters ?? 0}m away</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className={styles.half}>
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div>
-                    <p className={styles.cardEyebrow}>Field View</p>
-                    <h3>Live incident map</h3>
-                  </div>
-                  <span className={styles.signalBadge}>Tracking</span>
-                </div>
-                <LiveMap
-                  incidents={incidents}
-                  guestLocation={geoLocation}
-                  responderLocation={responderLocation}
-                  focusIncident={guestTrackedIncident ?? selectedIncident}
-                />
-              </div>
-            </div>
-            <div className={styles.half}>
-              <div className={`${styles.card} ${styles.safetyPanel}`}>
-                 <div className={styles.cardHeader}>
-                  <div>
-                    <p className={styles.cardEyebrow}>Guidance</p>
-                    <h3>Safety actions</h3>
-                  </div>
-                  <span className={`${styles.statusChip} ${styles[`status${statusLevel.charAt(0).toUpperCase() + statusLevel.slice(1)}`]}`}>
-                    {STATUS_COPY[statusLevel].label}
-                  </span>
-                </div>
-                <p className={styles.safetyMessage}>{STATUS_COPY[statusLevel].message}</p>
-                <div className={styles.exitCallout}>
-                  <div>
-                    <p>Nearest exit</p>
-                    <strong>
-                      {nearestExit
-                        ? `${nearestExit.label} • ${nearestExit.distance}m to your ${nearestExit.direction}`
-                        : "Exits highlighted on map"}
-                    </strong>
-                    {responderDistance ? <p>Help lead is currently {responderDistance}m away.</p> : null}
-                  </div>
-                  <button className={styles.secondaryButton} type="button" onClick={() => setSelectedIncident(incidents[0])}>
-                    Focus map
-                  </button>
-                </div>
-                <ul className={styles.instructionList}>
-                  {instructionSet.map((tip) => (
-                    <li key={tip}>
-                      <span aria-hidden="true">●</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className={styles.full}>
-              <div className={styles.guestLowerGrid}>
-                <AIChatPanel role={role} />
-                <div className={`${styles.card} ${styles.timelinePane}`}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>Activity</p>
-                      <h3>Incident timeline</h3>
-                    </div>
-                    <span className={styles.signalBadge}>Live feed</span>
-                  </div>
-                  <ul className={styles.timelineList}>
-                    {timelineEvents.length ? (
-                      timelineEvents.map((event) => (
-                        <li key={event.id} className={styles.timelineItem}>
-                          <div className={styles.timelineBadge} />
-                          <div>
-                            <div className={styles.timelineMeta}>
-                              <strong>{event.label}</strong>
-                              <span>{event.time}</span>
-                            </div>
-                            <p>{event.notes}</p>
-                            <small>Status: {event.status.replace(/_/g, " ")}</small>
-                          </div>
-                        </li>
-                      ))
-                    ) : (
-                      <li className={styles.timelineEmpty}>No active incidents yet. Stay alert for instructions.</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </>
+          <div className={styles.full}>
+            <GuestDashboard 
+              user={user}
+              activeIncident={guestTrackedIncident}
+              geoLocation={geoLocation}
+              nearestExit={nearestExit}
+              responderDistance={responderDistance}
+              onTrigger={handleTrigger}
+              incidents={incidents}
+              timelineEvents={timelineEvents}
+            />
+          </div>
         )}
 
         {role === "staff" && (
