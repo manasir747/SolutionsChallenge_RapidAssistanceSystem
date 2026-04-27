@@ -4,16 +4,16 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 1.25rem 5%;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1.5rem 5%;
 }
 
 .navbarScrolled {
-  padding: 0.75rem 5%;
-  background: rgba(2, 4, 10, 0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  padding: 1rem 5%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .navbarContainer {
@@ -32,6 +32,8 @@
   gap: 1rem;
   text-decoration: none;
   cursor: pointer;
+  opacity: 0;
+  animation: fadeDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .logoWrapper {
@@ -42,60 +44,54 @@
 }
 
 .logoOrb {
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, #5de0e6, #004aad);
+  width: 36px;
+  height: 36px;
+  background-image: url('/logo.png');
+  background-size: cover;
+  background-position: center;
+  background-color: #ffffff;
   border-radius: 50%;
   position: relative;
-  box-shadow: 0 0 15px rgba(93, 224, 230, 0.6);
-  animation: breathe 3s infinite ease-in-out;
 }
 
 .liveIndicator {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 6px;
-  height: 6px;
-  background: #ff5f6d;
-  border-radius: 50%;
-  animation: blink 2s infinite;
+  display: none;
 }
 
 .brandText {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #fff;
-  transition: color 0.3s;
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  transition: opacity 0.4s ease, color 1.5s ease;
 }
 
 .brand:hover .brandText {
-  background: linear-gradient(to right, #fff, #5de0e6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  opacity: 0.8;
+  color: #ff4d4d;
 }
 
-/* Nav Links */
 .navLinks {
   display: flex;
-  gap: 2.5rem;
+  gap: 3rem;
   align-items: center;
+  opacity: 0;
+  animation: fadeDown 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
 }
 
 .navItem {
   position: relative;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.3s;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  transition: color 1.5s ease;
   padding: 0.5rem 0;
 }
 
 .navItem:hover {
-  color: #fff;
-  transform: translateY(-1px);
+  color: #ff4d4d;
 }
 
 .navItem::after {
@@ -103,10 +99,9 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(to right, #5de0e6, #004aad);
-  transition: width 0.3s ease;
+  height: 1px;
+  background: #ff4d4d;
+  transition: width 1.5s ease;
 }
 
 .navItem:hover::after {
@@ -114,7 +109,7 @@
 }
 
 .activeItem {
-  color: #fff;
+  color: #ffffff;
 }
 
 .activeItem::after {
@@ -125,70 +120,50 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
+  opacity: 0;
+  animation: fadeDown 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 }
 
 .loginBtn {
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.6rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  transition: all 0.3s;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 400;
+  transition: color 1.5s ease;
 }
 
 .loginBtn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+  color: #ff4d4d;
 }
 
 .ctaBtn {
-  background: linear-gradient(135deg, #5de0e6, #004aad);
-  color: #02040a;
-  padding: 0.75rem 1.75rem;
-  border-radius: 12px;
-  font-weight: 700;
+  background: transparent;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 400;
   font-size: 0.95rem;
+  letter-spacing: 0.05em;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 25px rgba(93, 224, 230, 0.3);
+  transition: all 1.5s ease;
 }
 
 .ctaBtn:hover {
-  transform: scale(1.03);
-  box-shadow: 0 12px 35px rgba(93, 224, 230, 0.45);
+  background: #ff4d4d;
+  color: #ffffff;
+  border-color: #ff4d4d;
+  transform: translateY(-1px);
 }
 
 .shimmer {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 45%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.1) 55%,
-    transparent 100%
-  );
-  transform: rotate(45deg);
-  animation: shimmer 4s infinite linear;
+  display: none;
 }
 
 /* Gradient Line */
 .bottomBorder {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(93, 224, 230, 0.3), transparent);
-  opacity: 0.5;
+  display: none;
 }
 
 /* Mobile */
@@ -204,8 +179,9 @@
 .mobileMenu {
   position: fixed;
   inset: 0;
-  background: rgba(2, 4, 10, 0.95);
+  background: rgba(0, 0, 0, 0.98);
   backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   z-index: 2000;
   display: flex;
   flex-direction: column;
@@ -214,7 +190,7 @@
   gap: 2rem;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.4s;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobileMenuOpen {
@@ -224,24 +200,22 @@
 
 .mobileLink {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 400;
+  color: #ffffff;
   text-decoration: none;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  transition: opacity 0.4s, color 1.5s ease;
 }
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(93, 224, 230, 0.6); }
-  50% { transform: scale(1.1); box-shadow: 0 0 25px rgba(93, 224, 230, 0.8); }
+.mobileLink:hover {
+  opacity: 1;
+  color: #ff4d4d;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) rotate(45deg); }
+@keyframes fadeDown {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 1024px) {

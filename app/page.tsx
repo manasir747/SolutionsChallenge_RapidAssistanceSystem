@@ -1,28 +1,24 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Shield, 
-  Zap, 
-  Globe, 
-  ChevronRight, 
-  Activity, 
-  MapPin, 
-  Users, 
-  Flame, 
-  HeartPulse, 
+import {
+  Shield,
+  Zap,
+  Globe,
+  ChevronRight,
+  Activity,
+  MapPin,
+  Users,
+  Flame,
+  HeartPulse,
   Lock,
   ArrowUpRight,
   Play
 } from "lucide-react";
 import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 import styles from "@/styles/landing.module.css";
-
-const trustIndicators = [
-  { value: "500+", label: "Hotels Globally" },
-  { value: "99.99%", label: "System Uptime" },
-  { value: "37%", label: "Faster Response" },
-];
 
 const features = [
   { icon: <Activity className={styles.bulletIcon} />, text: "Real-time incident tracking & telemetry" },
@@ -31,67 +27,71 @@ const features = [
 ];
 
 const stats = [
-  { 
-    title: "Incident Load", 
-    value: "5 Active", 
-    trend: "+20%", 
-    icon: <Flame />, 
-    badge: "Fire", 
+  {
+    title: "Incident Load",
+    value: "5 Active",
+    trend: "+20%",
+    icon: <Flame />,
+    badge: "Fire",
     badgeClass: styles.badgeFire,
-    sparkline: "M0 30 Q10 10 20 25 T40 5 T60 20 T80 10 T100 25"
+    sparkline: "M0 35 C 15 35, 15 15, 30 15 C 45 15, 45 30, 60 30 C 75 30, 75 10, 90 10 C 105 10, 105 25, 120 25"
   },
-  { 
-    title: "Response Units", 
-    value: "12 Units", 
-    trend: "Stable", 
-    icon: <Users />, 
-    badge: "Staff", 
+  {
+    title: "Response Units",
+    value: "12 Units",
+    trend: "Stable",
+    icon: <Users />,
+    badge: "Staff",
     badgeClass: styles.badgeMedical,
-    sparkline: "M0 25 Q15 25 30 10 T60 20 T90 5 T120 15"
+    sparkline: "M0 25 C 20 25, 20 10, 40 10 C 60 10, 60 30, 80 30 C 100 30, 100 15, 120 15"
   },
-  { 
-    title: "Avg. Triage", 
-    value: "142s", 
-    trend: "-12s", 
-    icon: <HeartPulse />, 
-    badge: "Medical", 
+  {
+    title: "Avg. Triage",
+    value: "142s",
+    trend: "-12s",
+    icon: <HeartPulse />,
+    badge: "Medical",
     badgeClass: styles.badgeMedical,
-    sparkline: "M0 10 Q20 30 40 10 T80 20 T120 5"
+    sparkline: "M0 15 C 20 15, 20 35, 40 35 C 60 35, 60 10, 80 10 C 100 10, 100 20, 120 20"
   },
-  { 
-    title: "Secure Zones", 
-    value: "98.2%", 
-    trend: "+2.1%", 
-    icon: <Lock />, 
-    badge: "Security", 
+  {
+    title: "Secure Zones",
+    value: "98.2%",
+    trend: "+2.1%",
+    icon: <Lock />,
+    badge: "Security",
     badgeClass: styles.badgeSecurity,
-    sparkline: "M0 20 Q20 5 40 20 T80 10 T120 15"
+    sparkline: "M0 20 C 30 20, 30 5, 60 5 C 90 5, 90 25, 120 25"
   },
 ];
 
 export default function HomePage() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20; 
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      setMousePos({ x, y });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
     <main className={styles.heroShell} suppressHydrationWarning>
-      {/* Animated Background */}
-      <div className={styles.meshGradient}>
-        <div className={`${styles.meshCircle} ${styles.mesh1}`} />
-        <div className={`${styles.meshCircle} ${styles.mesh2}`} />
-        <div className={`${styles.meshCircle} ${styles.mesh3}`} />
-      </div>
+      <div className={styles.heroBackground}></div>
 
       <Navbar />
 
       <section className={styles.heroSection}>
         <div className={styles.heroContent}>
-          <div className={styles.statusBadge}>
-            <div className={styles.statusDot} />
-            Real-time • AI-Powered • Mission Critical
-          </div>
+
           <h1 className={styles.heroTitle}>
             Rapid Crisis Response for Hotels & Resorts
           </h1>
           <p className={styles.heroDescription}>
-            Coordinate guests, staff, and emergency command with live intelligence, 
+            Coordinate guests, staff, and emergency command with live intelligence,
             Gemini-powered playbooks, and precision routing in one streamlined control plane.
           </p>
 
@@ -114,28 +114,26 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className={styles.trustSignals}>
-            {trustIndicators.map((t, i) => (
-              <div key={i} className={styles.trustItem}>
-                <strong>{t.value}</strong>
-                <span>{t.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className={styles.heroVisual}>
           <div className={styles.dashboardAnchor}>
             {/* Floating Stats */}
-            <div className={`${styles.floatingStat} ${styles.stat1}`}>
+            <div 
+              className={`${styles.floatingStat} ${styles.stat1}`}
+              style={{ "--mouse-x": `${mousePos.x}px`, "--mouse-y": `${mousePos.y}px` } as React.CSSProperties}
+            >
               <div className={styles.statLabel}>Active Threat</div>
               <div className={styles.statValue}>
                 Fire • North Tower
                 <span className={styles.trendUp}>Critical</span>
               </div>
             </div>
-            
-            <div className={`${styles.floatingStat} ${styles.stat2}`}>
+
+            <div 
+              className={`${styles.floatingStat} ${styles.stat2}`}
+              style={{ "--mouse-x": `${mousePos.x * -1}px`, "--mouse-y": `${mousePos.y * -1}px` } as React.CSSProperties}
+            >
               <div className={styles.statLabel}>AI Recommended Route</div>
               <div className={styles.statValue}>
                 Service Corridor A
@@ -165,19 +163,18 @@ export default function HomePage() {
                 <div className={styles.mapPing} style={{ top: '30%', left: '40%' }}>
                   <div className={styles.pingPulse} />
                 </div>
-                <div className={styles.mapPing} style={{ top: '60%', left: '70%', background: '#5de0e6', boxShadow: '0 0 20px #5de0e6' }}>
-                  <div className={styles.pingPulse} style={{ borderColor: '#5de0e6' }} />
+                <div className={styles.mapPing} style={{ top: '60%', left: '70%', background: '#ffffff', boxShadow: '0 0 20px rgba(255, 255, 255, 0.3)' }}>
+                  <div className={styles.pingPulse} style={{ borderColor: '#ffffff' }} />
                 </div>
 
-                {/* Animated Route Line */}
                 <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-                  <path 
-                    d="M100 150 L250 180 L350 100" 
-                    fill="none" 
-                    stroke="#5de0e6" 
-                    strokeWidth="2" 
+                  <path
+                    d="M100 150 L250 180 L350 100"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="1"
                     strokeDasharray="5,5"
-                    opacity="0.5"
+                    opacity="0.3"
                   />
                 </svg>
               </div>
@@ -216,12 +213,14 @@ export default function HomePage() {
                   {s.trend}
                 </span>
               </div>
-              <svg className={styles.sparkline} viewBox="0 0 100 40">
-                <path 
-                  d={s.sparkline} 
-                  fill="none" 
-                  stroke={s.badgeClass.includes('Fire') ? '#ff5f6d' : s.badgeClass.includes('Medical') ? '#5de0e6' : '#ffc857'} 
-                  strokeWidth="2" 
+              <svg className={styles.sparkline} viewBox="0 0 120 40">
+                <path
+                  className={styles.sparklinePath}
+                  d={s.sparkline}
+                  fill="none"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             </div>
@@ -238,6 +237,8 @@ export default function HomePage() {
           <div className={styles.testimonialAuthor}>Director of Security, Grand Horizon Resorts</div>
         </div>
       </div>
+
+      <Footer />
     </main>
   );
 }
