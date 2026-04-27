@@ -1,16 +1,16 @@
 :root {
-  --background: #05060a;
-  --card: #0f1118;
-  --card-soft: #161924;
-  --primary: #5de0e6;
-  --primary-dark: #004aad;
-  --danger: #ff5f6d;
-  --success: #5ef38c;
-  --warning: #ffc857;
-  --text: #f7f8fc;
-  --muted: #a3a9c2;
-  --border: #1f2230;
-  --shadow: 0 20px 40px rgba(5, 6, 10, 0.4);
+  --background: #000000;
+  --card: #0a0a0a;
+  --card-soft: #111111;
+  --primary: #ffffff;
+  --primary-dark: #e0e0e0;
+  --danger: #888888;
+  --success: #aaaaaa;
+  --warning: #999999;
+  --text: #ffffff;
+  --muted: #888888;
+  --border: #1a1a1a;
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
 * {
@@ -26,6 +26,7 @@ body {
   color: var(--text);
   min-height: 100%;
   scroll-behavior: smooth;
+  letter-spacing: 0.015em;
 }
 
 a {
@@ -38,9 +39,7 @@ button {
 }
 
 body {
-  background: radial-gradient(circle at top, rgba(93, 224, 230, 0.12), transparent 55%),
-    radial-gradient(circle at 20% 20%, rgba(255, 95, 109, 0.07), transparent 40%),
-    var(--background);
+  background: var(--background);
 }
 
 main {
