@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { 
-  Shield, 
-  Activity, 
-  MapPin, 
-  Navigation, 
-  MessageSquare, 
-  Phone, 
-  Flame, 
-  HeartPulse, 
+import {
+  Shield,
+  Activity,
+  MapPin,
+  Navigation,
+  MessageSquare,
+  Phone,
+  Flame,
+  HeartPulse,
   AlertTriangle,
   ChevronRight,
   ArrowRight,
@@ -138,7 +138,6 @@ export default function GuestDashboard({
 
         {isSimulation && (
           <div className={styles.drillBadge}>
-            <Sparkles size={14} />
             <span>Drill Protocol Active</span>
           </div>
         )}
@@ -155,7 +154,7 @@ export default function GuestDashboard({
         {/* 2. LEFT: ALERT PANEL */}
         <div className={`${styles.alertPanel} ${!activeIncident ? styles.alertPanelSafe : ""}`}>
           {activeIncident && <div className={styles.alertGlow} />}
-          
+
           <div className={styles.alertHeader}>
             <span className={styles.statusLabel} style={{ color: activeIncident ? '#ff4d4d' : 'inherit' }}>
               {activeIncident ? 'Critical Alert' : 'Operational Status'}
@@ -164,7 +163,7 @@ export default function GuestDashboard({
               {activeIncident ? `${activeIncident.type.toUpperCase()} DETECTED` : 'STATUS: SECURE'}
             </h1>
             <p className={styles.alertSubtitle}>
-              {activeIncident 
+              {activeIncident
                 ? `Source: ${activeIncident.source === 'iot' ? 'IoT Sensor Grid' : 'Manual Trigger'}`
                 : 'No active threats detected in your vicinity.'}
             </p>
@@ -174,7 +173,7 @@ export default function GuestDashboard({
             <div className={styles.metaBox}>
               <div className={styles.metaLabel}>Responder Status</div>
               <div className={styles.metaValue}>
-                {activeIncident?.status === 'assigned' ? 'En Route' : 'Awaiting Dispatch'}
+                {activeIncident?.status === 'en_route' ? 'En Route' : 'Awaiting Dispatch'}
               </div>
             </div>
             <div className={styles.metaBox}>
@@ -188,15 +187,15 @@ export default function GuestDashboard({
             </div>
           </div>
 
-          <button 
+          <button
             className={styles.primaryActionBtn}
             onClick={() => handleTriggerWithFab("fire")}
           >
             {activeIncident ? 'I NEED ADDITIONAL HELP' : 'GET EMERGENCY HELP'}
           </button>
-          
+
           {activeIncident && (
-            <button 
+            <button
               className={styles.secondaryActionBtn}
               onClick={handleResolveIncident}
             >
@@ -212,7 +211,7 @@ export default function GuestDashboard({
               <div className={styles.aiIndicator} />
               AI MISSION GUIDANCE
             </div>
-            <button 
+            <button
               className={`${styles.actionChip} ${isAiSpeaking ? styles.stepActive : ""}`}
               onClick={toggleVoice}
             >
@@ -222,8 +221,8 @@ export default function GuestDashboard({
 
           <div className={styles.stepList}>
             {steps.map((step, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`${styles.stepItem} ${currentStep === idx ? styles.stepActive : ""}`}
               >
                 <div className={styles.stepNumber}>{idx + 1}</div>
@@ -262,7 +261,7 @@ export default function GuestDashboard({
           <div className={styles.chipGroup}>
             <button className={styles.actionChip} onClick={() => setCurrentStep(0)}>Reset Steps</button>
             <button className={styles.actionChip} onClick={handleNextStep}>Next Step <ArrowRight size={14} /></button>
-            <button 
+            <button
               className={styles.actionChip}
               onClick={() => setShowMap(!showMap)}
             >
@@ -274,7 +273,7 @@ export default function GuestDashboard({
         {/* 4. LIVE MAP */}
         {showMap && (
           <section className={styles.mapSection}>
-            <LiveMap 
+            <LiveMap
               incidents={incidents}
               guestLocation={geoLocation}
               focusIncident={activeIncident}
@@ -300,10 +299,9 @@ export default function GuestDashboard({
             <div className={styles.timelineList}>
               {timelineEvents.map((event, idx) => (
                 <div key={idx} className={styles.timelineItem}>
-                  <div className={`${styles.timelineDot} ${
-                    event.status === 'resolved' ? styles.dotSuccess : 
-                    event.status === 'active' ? styles.dotCritical : styles.dotWarning
-                  }`}>
+                  <div className={`${styles.timelineDot} ${event.status === 'resolved' ? styles.dotSuccess :
+                      event.status === 'active' ? styles.dotCritical : styles.dotWarning
+                    }`}>
                     {event.status === 'active' ? <Flame size={10} /> : <Activity size={10} />}
                   </div>
                   <div className={styles.timelineContent}>
@@ -315,7 +313,7 @@ export default function GuestDashboard({
                       {event.notes}
                     </p>
                     <div className={styles.timelineStatusPill} style={{
-                       color: event.status === 'resolved' ? '#10b981' : event.status === 'active' ? '#ff4d4d' : '#fbbf24'
+                      color: event.status === 'resolved' ? '#10b981' : event.status === 'active' ? '#ff4d4d' : '#fbbf24'
                     }}>
                       {event.status.toUpperCase()}
                     </div>
@@ -345,7 +343,7 @@ export default function GuestDashboard({
             <Shield size={20} color="#fbbf24" /> Security Threat
           </div>
         </div>
-        <button 
+        <button
           className={styles.fab}
           onClick={() => setFabOpen(!fabOpen)}
           aria-label="Report Emergency"

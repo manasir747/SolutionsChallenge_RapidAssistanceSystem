@@ -107,13 +107,13 @@ export default function AICommandAssistant({ activeScenario, severity }: Suggest
               <strong>{scenarioInsights.gap}</strong>
             </div>
           </div>
-          
+
           <div className={styles.autoApplyRow}>
             <label className={styles.toggleSwitch}>
-              <input 
-                type="checkbox" 
-                checked={autoApply} 
-                onChange={(e) => setAutoApply(e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={autoApply}
+                onChange={(e) => setAutoApply(e.target.checked)}
               />
               <span className={styles.toggleSlider}></span>
             </label>
@@ -131,7 +131,7 @@ export default function AICommandAssistant({ activeScenario, severity }: Suggest
             </button>
           </div>
         )}
-        
+
         {suggestions.map((suggestion) => (
           <article key={suggestion.id} className={styles.suggestionItem}>
             <div className={styles.suggestionHeader}>

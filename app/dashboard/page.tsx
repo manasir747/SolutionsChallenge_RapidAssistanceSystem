@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import styles from "@/styles/dashboard.module.css";
 import { useAuth } from "@/context/AuthContext";
@@ -106,7 +107,9 @@ export default function DashboardPage() {
   const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
   const [availableStaff, setAvailableStaff] = useState<StaffOption[]>([]);
   const [simulatingIncidentType, setSimulatingIncidentType] = useState<IncidentType | null>(null);
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   // Simulation Command Center States
   const [simulationMode, setSimulationMode] = useState<"live" | "sim">("sim");
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
@@ -184,7 +187,7 @@ export default function DashboardPage() {
     });
     const direction = closest.lng - geoLocation.lng >= 0 ? "right" : "left";
     return {
-      label: closest.label,
+      label: closest.label || "Exit",
       distance: Math.max(5, Math.round(minDistance)),
       direction
     };
@@ -232,8 +235,18 @@ export default function DashboardPage() {
   }, [selectedIncident, visibleIncidents]);
 
   useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     if (!navigator.geolocation) return;
-    
+
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setGeoLocation({
@@ -244,8 +257,8 @@ export default function DashboardPage() {
       },
       (error) => {
         console.warn("Geolocation error:", error.code, error.message);
-        const msg = error.code === 1 
-          ? "Location access denied. Please enable GPS for tactical guidance." 
+        const msg = error.code === 1
+          ? "Location access denied. Please enable GPS for tactical guidance."
           : "Satellite signal weak. Using estimated hotel coordinates.";
         setErrorMessage(msg);
         setGeoLocation(prev => prev || DEFAULT_LOCATION);
@@ -402,7 +415,7 @@ export default function DashboardPage() {
 
     try {
       await createIncident(type, source, DEFAULT_LOCATION, `[SIMULATION] ${source.toUpperCase()} emergency: ${hint} (Severity: ${simSeverity})`);
-      
+
       setTimeout(() => {
         setSimTimeline(prev => [
           ...prev.map(t => ({ ...t, status: "completed" })),
@@ -465,41 +478,55 @@ export default function DashboardPage() {
             <span className={styles.rolePill}>{role.toUpperCase()}</span>
           </div>
         </div>
-        <div className={styles.headerMeta}>
-          <div className={styles.metaTile}>
-            <p>Emergency desk</p>
-            <div className={styles.metaPrimary}>{EMERGENCY_CONTACT}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>System status</p>
-            <div className={`${styles.metaStatus} ${ready ? styles.statusLive : styles.statusSim}`}>{systemStatusLabel}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>Active incident</p>
-            <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>GPS Telemetry</p>
-            <div className={`${styles.metaStatus} ${geoLocation.lat !== DEFAULT_LOCATION.lat ? styles.statusLive : styles.statusWarning}`}>
-              {geoLocation.lat !== DEFAULT_LOCATION.lat ? "Satellite Lock" : "Standard Grid"}
+        <div className={styles.headerRight} ref={menuRef}>
+          <button 
+            className={styles.menuToggle} 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <div className={styles.menuIconWrapper} data-open={isMenuOpen}>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </div>
-          </div>
-          <div className={styles.userBadge}>
-            <span className={styles.userBadgeIcon} aria-hidden="true">
-              {roleGlyph}
-            </span>
-            <div>
-              <p>Logged in</p>
-              <strong>{ROLE_LABELS[role]}</strong>
+          </button>
+          
+          {isMenuOpen && (
+            <div className={styles.headerMetaDropdown}>
+              <div className={styles.metaTile}>
+                <p>Emergency desk</p>
+                <div className={styles.metaPrimary}>{EMERGENCY_CONTACT}</div>
+              </div>
+              <div className={styles.metaTile}>
+                <p>System status</p>
+                <div className={`${styles.metaStatus} ${ready ? styles.statusLive : styles.statusSim}`}>{systemStatusLabel}</div>
+              </div>
+              <div className={styles.metaTile}>
+                <p>Active incident</p>
+                <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
+              </div>
+              <div className={styles.metaTile}>
+                <p>GPS Telemetry</p>
+                <div className={`${styles.metaStatus} ${geoLocation.lat !== DEFAULT_LOCATION.lat ? styles.statusLive : styles.statusWarning}`}>
+                  {geoLocation.lat !== DEFAULT_LOCATION.lat ? "Satellite Lock" : "Standard Grid"}
+                </div>
+              </div>
+              <div className={styles.userBadge}>
+                <span className={styles.userBadgeIcon} aria-hidden="true">
+                  {roleGlyph}
+                </span>
+                <div>
+                  <p>Logged in</p>
+                  <strong>{ROLE_LABELS[role]}</strong>
+                </div>
+              </div>
+              {user && (
+                <button className={styles.logoutButton} onClick={logout} aria-label="Logout">
+                  <span>Logout</span>
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M5 10h10m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
             </div>
-          </div>
-          {user && (
-            <button className={styles.logoutButton} onClick={logout} aria-label="Logout">
-              <span>Logout</span>
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M5 10h10m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
           )}
         </div>
       </div>
@@ -520,7 +547,7 @@ export default function DashboardPage() {
       <section className={styles.grid}>
         {role === "guest" && (
           <div className={styles.full}>
-            <GuestDashboard 
+            <GuestDashboard
               user={user}
               activeIncident={guestTrackedIncident}
               geoLocation={geoLocation}
@@ -586,12 +613,12 @@ export default function DashboardPage() {
                       </div>
                       <div className={styles.ccHeaderControls}>
                         <div className={styles.modeToggle}>
-                          <button 
-                            className={simulationMode === 'live' ? styles.activeMode : ''} 
+                          <button
+                            className={simulationMode === 'live' ? styles.activeMode : ''}
                             onClick={() => setSimulationMode('live')}
                           >Live</button>
-                          <button 
-                            className={simulationMode === 'sim' ? styles.activeMode : ''} 
+                          <button
+                            className={simulationMode === 'sim' ? styles.activeMode : ''}
                             onClick={() => setSimulationMode('sim')}
                           >Simulation</button>
                         </div>
@@ -608,7 +635,7 @@ export default function DashboardPage() {
                     {ADMIN_IOT_SIMULATIONS.map((simulation) => {
                       const isSelected = selectedScenario === simulation.type;
                       return (
-                        <div 
+                        <div
                           key={`${simulation.source}-${simulation.type}`}
                           className={`${styles.scenarioCard} ${isSelected ? styles.scenarioExpanded : ''} ${styles[`scenario${simulation.type.charAt(0).toUpperCase() + simulation.type.slice(1)}`]}`}
                           onClick={() => setSelectedScenario(isSelected ? null : simulation.type)}
@@ -632,7 +659,7 @@ export default function DashboardPage() {
                                 <label>Severity Level</label>
                                 <div className={styles.severitySwitch}>
                                   {['low', 'medium', 'critical'].map(s => (
-                                    <button 
+                                    <button
                                       key={s}
                                       className={simSeverity === s ? styles[`active${s.charAt(0).toUpperCase() + s.slice(1)}`] : ''}
                                       onClick={() => setSimSeverity(s as any)}
@@ -653,17 +680,17 @@ export default function DashboardPage() {
 
                               <div className={styles.controlGroup}>
                                 <label>Sensor Sensitivity ({simSensitivity}%)</label>
-                                <input 
-                                  type="range" 
-                                  min="0" max="100" 
-                                  value={simSensitivity} 
+                                <input
+                                  type="range"
+                                  min="0" max="100"
+                                  value={simSensitivity}
                                   onChange={(e) => setSimSensitivity(parseInt(e.target.value))}
                                   className={styles.ccSlider}
                                 />
                               </div>
 
                               <div className={styles.scenarioActions}>
-                                <button 
+                                <button
                                   className={styles.primaryAction}
                                   onClick={() => handleSimulateIotIncident(simulation.type, simulation.source, simulation.hint)}
                                   disabled={isSimRunning}
@@ -754,9 +781,9 @@ export default function DashboardPage() {
                   <p>System status and recommendations.</p>
                 </div>
                 <AnalyticsPanel incidents={rawIncidents} />
-                <SuggestionPanel 
-                  activeScenario={selectedScenario} 
-                  severity={simSeverity} 
+                <SuggestionPanel
+                  activeScenario={selectedScenario}
+                  severity={simSeverity}
                 />
               </aside>
             </div>

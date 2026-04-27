@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, PDFFont } from "pdf-lib";
 import { callGemini } from "@/lib/gemini";
 import { Incident } from "@/types";
 
@@ -26,7 +26,7 @@ function parseSummary(text: string): SummaryPayload {
   }
 }
 
-function wrapText(text: string, font: Awaited<ReturnType<typeof StandardFonts["Helvetica"]>>, fontSize: number, maxWidth: number) {
+function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number) {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let currentLine = "";
@@ -47,7 +47,7 @@ function wrapText(text: string, font: Awaited<ReturnType<typeof StandardFonts["H
 
 function addWrappedLines(options: {
   page: import("pdf-lib").PDFPage;
-  font: Awaited<ReturnType<typeof StandardFonts["Helvetica"]>>;
+  font: PDFFont;
   text: string;
   x: number;
   startY: number;
