@@ -6,7 +6,7 @@ import { GoogleAuth } from 'google-auth-library';
 admin.initializeApp();
 
 const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 const auth = new GoogleAuth({
   scopes: 'https://www.googleapis.com/auth/generative-language'
