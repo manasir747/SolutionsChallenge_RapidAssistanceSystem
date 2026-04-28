@@ -1,7 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
 const auth = new GoogleAuth({
   scopes: 'https://www.googleapis.com/auth/generative-language'
