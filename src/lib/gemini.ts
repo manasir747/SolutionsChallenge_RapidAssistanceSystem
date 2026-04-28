@@ -29,9 +29,12 @@ async function getAuthHeaders() {
   const apiKey = process.env.GEMINI_API_KEY;
   
   if (apiKey && apiKey.startsWith('AIza')) {
+    console.log('[Gemini] Using provided API Key');
     return { "x-goog-api-key": apiKey, "key": apiKey };
   }
 
+  // Only fall back to Service Account if NO API key is found
+  console.log('[Gemini] No API Key found, attempting Service Account (ADC)...');
   try {
     const client = await auth.getClient();
     const token = await client.getAccessToken();

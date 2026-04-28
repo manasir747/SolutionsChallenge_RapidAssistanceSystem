@@ -6,7 +6,7 @@ import { GoogleAuth } from 'google-auth-library';
 admin.initializeApp();
 
 const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 const auth = new GoogleAuth({
   scopes: 'https://www.googleapis.com/auth/generative-language'
@@ -15,8 +15,11 @@ const auth = new GoogleAuth({
 async function getAuthHeaders() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (apiKey && apiKey.startsWith('AIza')) {
+    console.log('[Gemini] Functions: Using provided API Key');
     return { "x-goog-api-key": apiKey, "key": apiKey };
   }
+  
+  console.log('[Gemini] Functions: No API Key found, attempting Service Account (ADC)...');
   const client = await auth.getClient();
   const token = await client.getAccessToken();
   return { "Authorization": `Bearer ${token.token}` };
