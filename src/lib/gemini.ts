@@ -1,5 +1,11 @@
+import { GoogleAuth } from 'google-auth-library';
+
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+
+const auth = new GoogleAuth({
+  scopes: 'https://www.googleapis.com/auth/generative-language'
+});
 
 class GeminiError extends Error {
   status: number;
@@ -19,12 +25,34 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function callGemini(prompt: string) {
+async function getAuthHeaders() {
   const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (apiKey && apiKey.startsWith('AIza')) {
+    return { "x-goog-api-key": apiKey, "key": apiKey };
+  }
 
-  if (!apiKey) {
-    console.error("[Gemini] Missing GEMINI_API_KEY environment variable");
-    throw new Error("Set GEMINI_API_KEY in .env.local");
+  try {
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+    return { "Authorization": `Bearer ${token.token}` };
+  } catch (error) {
+    console.error("[Gemini] ADC Auth failed:", error);
+    return {};
+  }
+}
+
+export async function callGemini(prompt: string) {
+  const authData = await getAuthHeaders();
+  const apiKey = authData.key;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json"
+  };
+
+  if (authData.Authorization) {
+    headers["Authorization"] = authData.Authorization;
+  } else if (authData["x-goog-api-key"]) {
+    headers["x-goog-api-key"] = authData["x-goog-api-key"];
   }
 
   const payload = {
@@ -36,7 +64,9 @@ export async function callGemini(prompt: string) {
     ]
   };
 
-  console.info("[Gemini] Sending request", {
+  console.info("🚨 [REAL-TIME] Attempting request", {
+    url: GEMINI_URL,
+    authMethod: authData.Authorization ? 'ADC_TOKEN' : 'API_KEY',
     promptPreview: prompt.slice(0, 80)
   });
 
@@ -44,12 +74,10 @@ export async function callGemini(prompt: string) {
   let rawBody = "";
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+    const fetchUrl = apiKey ? `${GEMINI_URL}?key=${apiKey}` : GEMINI_URL;
+    response = await fetch(fetchUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey
-      },
+      headers,
       body: JSON.stringify(payload)
     });
 

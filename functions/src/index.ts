@@ -1,11 +1,26 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 
+import { GoogleAuth } from 'google-auth-library';
+
 admin.initializeApp();
 
 const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+
+const auth = new GoogleAuth({
+  scopes: 'https://www.googleapis.com/auth/generative-language'
+});
+
+async function getAuthHeaders() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey && apiKey.startsWith('AIza')) {
+    return { "x-goog-api-key": apiKey, "key": apiKey };
+  }
+  const client = await auth.getClient();
+  const token = await client.getAccessToken();
+  return { "Authorization": `Bearer ${token.token}` };
+}
 
 type GeminiResponse = {
   candidates?: Array<{
@@ -18,17 +33,26 @@ type GeminiResponse = {
 };
 
 async function callGemini(prompt: string) {
-  if (!GEMINI_KEY) {
-    throw new Error("Missing GEMINI_API_KEY for Cloud Functions");
+  const authData = await getAuthHeaders();
+  const apiKey = authData.key;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+
+  if (authData.Authorization) {
+    headers["Authorization"] = authData.Authorization;
+  } else if (authData["x-goog-api-key"]) {
+    headers["x-goog-api-key"] = authData["x-goog-api-key"];
   }
 
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${GEMINI_KEY}`, {
+  const fetchUrl = apiKey ? `${GEMINI_ENDPOINT}?key=${apiKey}` : GEMINI_ENDPOINT;
+  const response = await fetch(fetchUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
   });
 
   if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[Gemini] Functions error ${response.status}`, errorBody);
     throw new Error(`Gemini error ${response.status}`);
   }
 

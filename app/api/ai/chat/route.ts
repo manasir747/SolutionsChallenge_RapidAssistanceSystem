@@ -34,10 +34,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
   }
 
-  console.info("[/api/ai/chat] Handling prompt", {
-    role,
-    promptPreview: prompt.slice(0, 80)
-  });
+  console.info(">>>>> CHAT API TRIGGERED <<<<<", { role, promptPreview: prompt.slice(0, 50) });
 
   try {
     const answer = await callGemini(
