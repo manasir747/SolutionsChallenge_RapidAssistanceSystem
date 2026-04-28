@@ -16,6 +16,8 @@ export default function AICommandAssistant({ activeScenario, severity }: Suggest
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [hasBuilt, setHasBuilt] = useState(false);
   const [autoApply, setAutoApply] = useState(false);
+  const isActive = Boolean(activeScenario || suggestions.length);
+  const severityClass = severity ? styles[`aiSeverity${severity.charAt(0).toUpperCase() + severity.slice(1)}`] : "";
 
   const scenarioInsights = useMemo(() => {
     if (!activeScenario) return null;
@@ -70,16 +72,19 @@ export default function AICommandAssistant({ activeScenario, severity }: Suggest
   };
 
   return (
-    <div className={`${styles.card} ${styles.aiCommandAssistant}`}>
+    <div className={`${styles.card} ${styles.aiCommandAssistant} ${isActive ? styles.aiActive : ""} ${severityClass}`}>
       <div className={styles.cardHeader}>
         <div className={styles.aiTitleGroup}>
           <Sparkles size={20} color="#38bdf8" />
-          <h3>AI Command Assistant</h3>
+          <div>
+            <p className={styles.cardEyebrow}>AI Suggestions</p>
+            <h3>Command Intelligence</h3>
+          </div>
         </div>
         <div className={styles.aiHeaderActions}>
           <div className={styles.confidenceMeter}>
-            <div className={styles.meterFill} style={{ width: '94%' }}></div>
-            <span>94% Confidence</span>
+            <div className={styles.meterFill} style={{ width: "94%" }}></div>
+            <span>AI Core 94%</span>
           </div>
         </div>
       </div>
@@ -126,9 +131,17 @@ export default function AICommandAssistant({ activeScenario, severity }: Suggest
         {!hasBuilt && !activeScenario && (
           <div className={styles.aiEmptyState}>
             <p>Select a simulation scenario or click below for global intelligence.</p>
-            <button className={styles.secondaryButton} onClick={fetchSuggestions} disabled={loading}>
-              Build Global Recommendations
+            <button className={styles.primaryButton} onClick={fetchSuggestions} disabled={loading}>
+              ⚡ Generate AI Strategy
             </button>
+          </div>
+        )}
+
+        {loading && (
+          <div className={styles.skeletonStack}>
+            <div className={styles.skeletonLine}></div>
+            <div className={styles.skeletonLine}></div>
+            <div className={styles.skeletonLine}></div>
           </div>
         )}
         

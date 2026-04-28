@@ -106,6 +106,12 @@ export default function DashboardPage() {
   const [downloadingIncidentId, setDownloadingIncidentId] = useState<string | null>(null);
   const [availableStaff, setAvailableStaff] = useState<StaffOption[]>([]);
   const [simulatingIncidentType, setSimulatingIncidentType] = useState<IncidentType | null>(null);
+  const [ultraDark, setUltraDark] = useState(false);
+  const [currentTime, setCurrentTime] = useState(() =>
+    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+  );
+  const [uptimeStart] = useState(() => Date.now());
+  const [uptime, setUptime] = useState("00:00:00");
   
   // Simulation Command Center States
   const [simulationMode, setSimulationMode] = useState<"live" | "sim">("sim");
@@ -259,6 +265,54 @@ export default function DashboardPage() {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
+
+  useEffect(() => {
+    const updateClock = () => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      const elapsed = Math.max(0, Date.now() - uptimeStart);
+      const totalSeconds = Math.floor(elapsed / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      setUptime(`${hours}:${minutes}:${seconds}`);
+    };
+
+    updateClock();
+    const interval = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(interval);
+  }, [uptimeStart]);
+
+  useEffect(() => {
+    if (role !== "admin") return;
+    const handleShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      if (!event.shiftKey) return;
+
+      if (event.key === "D" || event.key === "d") {
+        event.preventDefault();
+        setUltraDark((prev) => !prev);
+      }
+
+      if (event.key === "1") {
+        event.preventDefault();
+        setAdminIncidentView("active");
+      }
+
+      if (event.key === "2") {
+        event.preventDefault();
+        setAdminIncidentView("closed");
+      }
+
+      if (event.key === "L" || event.key === "l") {
+        event.preventDefault();
+        setSimulationMode((prev) => (prev === "live" ? "sim" : "live"));
+      }
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [role]);
 
   useEffect(() => {
     if (role !== "admin" || !db) {
@@ -446,6 +500,7 @@ export default function DashboardPage() {
   const activeIncidentLabel = activeIncident
     ? `${activeIncident.type} • ${activeIncident.source} • ${activeIncident.status.replace(/_/g, " ")}`
     : "No active incident";
+  const aiStatusLabel = ready ? "AI Active / Monitoring" : "AI Offline / Monitoring";
 
   if (loading) {
     return (
@@ -456,53 +511,127 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className={`${styles.shell} ${role === "admin" ? styles.adminShell : ""}`}>
-      <div className={styles.topBar}>
-        <div>
-          <h1>Rapid Assistance</h1>
-          <div className={styles.titleMeta}>
-            <p>{ROLE_LABELS[role]} View</p>
-            <span className={styles.rolePill}>{role.toUpperCase()}</span>
-          </div>
-        </div>
-        <div className={styles.headerMeta}>
-          <div className={styles.metaTile}>
-            <p>Emergency desk</p>
-            <div className={styles.metaPrimary}>{EMERGENCY_CONTACT}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>System status</p>
-            <div className={`${styles.metaStatus} ${ready ? styles.statusLive : styles.statusSim}`}>{systemStatusLabel}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>Active incident</p>
-            <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
-          </div>
-          <div className={styles.metaTile}>
-            <p>GPS Telemetry</p>
-            <div className={`${styles.metaStatus} ${geoLocation.lat !== DEFAULT_LOCATION.lat ? styles.statusLive : styles.statusWarning}`}>
-              {geoLocation.lat !== DEFAULT_LOCATION.lat ? "Satellite Lock" : "Standard Grid"}
+    <main className={`${styles.shell} ${role === "admin" ? `${styles.adminShell} ${ultraDark ? styles.ultraDark : ""}` : ""}`}>
+      {role === "admin" ? (
+        <header className={styles.commandBar}>
+          <div className={styles.commandBrand}>
+            <div className={styles.brandRow}>
+              <span className={styles.brandGlyph} aria-hidden="true">
+                ◉
+              </span>
+              <div>
+                <h1>Rapid Assistance</h1>
+                <p>Emergency Command Center</p>
+              </div>
+            </div>
+            <div className={styles.commandBadges}>
+              <span className={styles.rolePill}>{role.toUpperCase()}</span>
+              <span className={styles.metaTag}>AI Powered</span>
             </div>
           </div>
-          <div className={styles.userBadge}>
-            <span className={styles.userBadgeIcon} aria-hidden="true">
-              {roleGlyph}
-            </span>
-            <div>
-              <p>Logged in</p>
-              <strong>{ROLE_LABELS[role]}</strong>
+
+          <div className={styles.commandStatusRow}>
+            <div className={`${styles.statusPulsePill} ${ready ? styles.statusLive : styles.statusSim}`}>
+              <span className={styles.statusPulseDot} />
+              <span>{systemStatusLabel} Link</span>
+            </div>
+            <div className={styles.statusTile}>
+              <span>System time</span>
+              <strong>{currentTime}</strong>
+            </div>
+            <div className={styles.statusTile}>
+              <span>Uptime</span>
+              <strong>{uptime}</strong>
+            </div>
+            <div className={styles.statusTile}>
+              <span>AI status</span>
+              <strong>{aiStatusLabel}</strong>
+            </div>
+            <div className={styles.statusTile}>
+              <span>Emergency desk</span>
+              <strong>{EMERGENCY_CONTACT}</strong>
+            </div>
+            <div className={styles.statusTileWide}>
+              <span>Active incident</span>
+              <strong>{activeIncidentLabel}</strong>
             </div>
           </div>
-          {user && (
-            <button className={styles.logoutButton} onClick={logout} aria-label="Logout">
-              <span>Logout</span>
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M5 10h10m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          )}
+
+          <div className={styles.commandActions}>
+            <div className={styles.commandShortcutStack}>
+              <button
+                className={styles.commandToggle}
+                type="button"
+                onClick={() => setUltraDark((prev) => !prev)}
+              >
+                {ultraDark ? "Ultra-dark" : "Dark"} mode
+              </button>
+              <span className={styles.commandShortcutHint}>Shift + D • Shift + 1/2 • Shift + L</span>
+            </div>
+            <div className={styles.userBadge}>
+              <span className={styles.userBadgeIcon} aria-hidden="true">
+                {roleGlyph}
+              </span>
+              <div>
+                <p>Logged in</p>
+                <strong>{ROLE_LABELS[role]}</strong>
+              </div>
+            </div>
+            {user && (
+              <button className={styles.logoutButtonMinimal} onClick={logout} aria-label="Logout">
+                <span>Logout</span>
+              </button>
+            )}
+          </div>
+        </header>
+      ) : (
+        <div className={styles.topBar}>
+          <div>
+            <h1>Rapid Assistance</h1>
+            <div className={styles.titleMeta}>
+              <p>{ROLE_LABELS[role]} View</p>
+              <span className={styles.rolePill}>{role.toUpperCase()}</span>
+            </div>
+          </div>
+          <div className={styles.headerMeta}>
+            <div className={styles.metaTile}>
+              <p>Emergency desk</p>
+              <div className={styles.metaPrimary}>{EMERGENCY_CONTACT}</div>
+            </div>
+            <div className={styles.metaTile}>
+              <p>System status</p>
+              <div className={`${styles.metaStatus} ${ready ? styles.statusLive : styles.statusSim}`}>{systemStatusLabel}</div>
+            </div>
+            <div className={styles.metaTile}>
+              <p>Active incident</p>
+              <div className={styles.metaPrimary}>{activeIncidentLabel}</div>
+            </div>
+            <div className={styles.metaTile}>
+              <p>GPS Telemetry</p>
+              <div className={`${styles.metaStatus} ${geoLocation.lat !== DEFAULT_LOCATION.lat ? styles.statusLive : styles.statusWarning}`}>
+                {geoLocation.lat !== DEFAULT_LOCATION.lat ? "Satellite Lock" : "Standard Grid"}
+              </div>
+            </div>
+            <div className={styles.userBadge}>
+              <span className={styles.userBadgeIcon} aria-hidden="true">
+                {roleGlyph}
+              </span>
+              <div>
+                <p>Logged in</p>
+                <strong>{ROLE_LABELS[role]}</strong>
+              </div>
+            </div>
+            {user && (
+              <button className={styles.logoutButton} onClick={logout} aria-label="Logout">
+                <span>Logout</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M5 10h10m0 0-3-3m3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {!ready && (
         <div className={styles.card}>
@@ -574,8 +703,10 @@ export default function DashboardPage() {
         {role === "admin" && (
           <div className={styles.adminContainer}>
             <div className={styles.adminGrid}>
-              <div className={styles.adminPrimary}>
+              <div className={styles.adminHero}>
                 <CommandCenterPanel incidents={activeIncidents} activeIncident={activeIncident} />
+              </div>
+              <div className={styles.adminPrimary}>
                 <div className={`${styles.card} ${styles.simulationCommandCenter} ${simulationMode === 'sim' ? styles.modeSimActive : ''}`}>
                   <div className={styles.cardHeader}>
                     <div className={styles.ccHeaderMain}>
@@ -668,7 +799,7 @@ export default function DashboardPage() {
                                   onClick={() => handleSimulateIotIncident(simulation.type, simulation.source, simulation.hint)}
                                   disabled={isSimRunning}
                                 >
-                                  {isSimRunning ? 'Simulation Running...' : 'Simulate Now'}
+                                  {isSimRunning ? 'Simulation Running...' : 'Run Simulation'}
                                 </button>
                                 <button className={styles.secondaryAction}>Preview AI Impact</button>
                               </div>
@@ -738,15 +869,6 @@ export default function DashboardPage() {
                   onReassign={handleReassignIncident}
                   onNotifyDepartment={handleNotifyDepartment}
                 />
-                <div className={`${styles.card} ${styles.adminMapCard}`}>
-                  <div className={styles.cardHeader}>
-                    <div>
-                      <p className={styles.cardEyebrow}>Field view</p>
-                      <h3>Live incident map</h3>
-                    </div>
-                  </div>
-                  <LiveMap incidents={activeIncidents} focusIncident={role === "admin" ? activeIncident : selectedIncident} />
-                </div>
               </div>
               <aside className={styles.adminSecondary}>
                 <div className={styles.sectionHeader}>
@@ -759,6 +881,16 @@ export default function DashboardPage() {
                   severity={simSeverity} 
                 />
               </aside>
+              <div className={`${styles.card} ${styles.adminMapCard} ${styles.adminMapWide}`}>
+                <div className={styles.cardHeader}>
+                  <div>
+                    <p className={styles.cardEyebrow}>Field view</p>
+                    <h3>Live incident map</h3>
+                  </div>
+                  <span className={styles.signalBadge}>Tracking</span>
+                </div>
+                <LiveMap incidents={activeIncidents} focusIncident={role === "admin" ? activeIncident : selectedIncident} />
+              </div>
             </div>
           </div>
         )}

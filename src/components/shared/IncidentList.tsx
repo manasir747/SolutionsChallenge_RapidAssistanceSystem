@@ -1,6 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Flame,
+  HeartPulse,
+  Package,
+  ShieldAlert,
+  UserPlus
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import styles from "@/styles/dashboard.module.css";
 import { Incident, UserRole } from "@/types";
@@ -114,6 +126,20 @@ export default function IncidentList({
     }
   };
 
+  const getIncidentIcon = (type: Incident["type"]) => {
+    switch (type) {
+      case "fire":
+        return <Flame size={18} />;
+      case "medical":
+        return <HeartPulse size={18} />;
+      case "security":
+        return <ShieldAlert size={18} />;
+      case "theft":
+      default:
+        return <Package size={18} />;
+    }
+  };
+
   return (
     <div className={`${styles.card} ${styles.full}`}>
       <div className={styles.cardHeader}>
@@ -124,14 +150,21 @@ export default function IncidentList({
         {incidents.map((incident) => (
           <article
             key={incident.id}
-            className={styles.incidentItem}
+            className={`${styles.incidentItem} ${styles[`incident${incident.severity.charAt(0).toUpperCase() + incident.severity.slice(1)}`]} ${
+              selectedId === incident.id ? styles.incidentSelected : ""
+            }`}
             style={selectedId === incident.id ? { borderColor: "var(--primary)" } : undefined}
             onClick={() => onSelect?.(incident)}
           >
             <div className={styles.incidentHeader}>
-              <div>
-                <p className={styles.incidentType}>{incident.type.toUpperCase()}</p>
-                <span className={styles.incidentSource}>{incident.source.toUpperCase()}</span>
+              <div className={styles.incidentTitleRow}>
+                <span className={styles.incidentIcon} aria-hidden="true">
+                  {getIncidentIcon(incident.type)}
+                </span>
+                <div>
+                  <p className={styles.incidentType}>{incident.type.toUpperCase()}</p>
+                  <span className={styles.incidentSource}>{incident.source.toUpperCase()}</span>
+                </div>
               </div>
               <span className={`${styles.incidentBadge} ${priorityClass[incident.severity]}`}>
                 {incident.severity}
@@ -168,30 +201,32 @@ export default function IncidentList({
             </div>
             <footer className={styles.incidentFooter}>
               <button
-                className={styles.ghostButton}
+                className={`${styles.ghostButton} ${styles.iconButton}`}
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
                   toggleExpanded(incident.id);
                 }}
               >
+                {expanded[incident.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 {expanded[incident.id] ? "Hide details" : "View details"}
               </button>
               {role === "admin" && incident.status !== "resolved" && (
                 <button
-                  className={styles.primaryButton}
+                  className={`${styles.primaryButton} ${styles.iconButton}`}
                   onClick={(event) => {
                     event.stopPropagation();
                     setConfirmIncident(incident);
                   }}
                   disabled={resolvingId === incident.id}
                 >
+                  <CheckCircle2 size={16} />
                   {resolvingId === incident.id ? "Closing..." : "Close Incident"}
                 </button>
               )}
               {role === "admin" && onDownloadSummary && (
                 <button
-                  className={styles.secondaryButton}
+                  className={`${styles.secondaryButton} ${styles.iconButton}`}
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -199,6 +234,7 @@ export default function IncidentList({
                   }}
                   disabled={downloadingSummaryId === incident.id}
                 >
+                  <FileText size={16} />
                   {downloadingSummaryId === incident.id ? "Preparing PDF..." : "Download Summary PDF"}
                 </button>
               )}
@@ -237,11 +273,12 @@ export default function IncidentList({
                             ))}
                           </select>
                           <button
-                            className={styles.secondaryButton}
+                            className={`${styles.secondaryButton} ${styles.iconButton}`}
                             type="button"
                             onClick={() => void handleAssign(incident)}
                             disabled={assigningId === incident.id || !currentStaffId || !staffExists}
                           >
+                            <UserPlus size={16} />
                             {assigningId === incident.id ? "Assigning..." : "Assign"}
                           </button>
                         </>
@@ -275,7 +312,7 @@ export default function IncidentList({
                       ))}
                     </select>
                     <button
-                      className={styles.secondaryButton}
+                      className={`${styles.secondaryButton} ${styles.iconButton}`}
                       type="button"
                       onClick={() => void handleNotify(incident)}
                       disabled={
@@ -283,6 +320,7 @@ export default function IncidentList({
                         notifyingKey === `${incident.id}:${selectedDepartment[incident.id]}`
                       }
                     >
+                      <Bell size={16} />
                       {notifyingKey === `${incident.id}:${selectedDepartment[incident.id]}` ? "Notifying..." : "Notify"}
                     </button>
                   </div>

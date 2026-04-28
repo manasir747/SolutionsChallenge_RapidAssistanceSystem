@@ -12,24 +12,25 @@
 }
 
 .adminShell {
-  background: radial-gradient(circle at 20% 20%, rgba(30, 64, 175, 0.15), transparent 55%),
-    linear-gradient(140deg, #05070f, #0b1220 70%, #0a1020);
+  background: radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.18), transparent 60%),
+    radial-gradient(circle at 80% 15%, rgba(168, 85, 247, 0.2), transparent 55%),
+    linear-gradient(160deg, #04060f, #0b1225 65%, #080b1a);
 }
 
 .adminShell .card {
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  box-shadow: none;
-  padding: 1.25rem;
+  background: rgba(11, 16, 32, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(2, 6, 23, 0.55);
+  padding: 1.4rem;
   width: 100%;
 }
 
 .adminShell .incidentItem,
 .adminShell .suggestionItem {
-  background: #0b1324;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  background: rgba(8, 12, 24, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
   width: 100%;
 }
 
@@ -38,19 +39,31 @@
 }
 
 .adminShell .primaryButton {
-  background: #2563eb;
-  color: #f8fafc;
-  box-shadow: none;
-  border-radius: 10px;
+  background: linear-gradient(120deg, #38bdf8, #6366f1);
+  color: #020617;
+  box-shadow: 0 18px 35px rgba(56, 189, 248, 0.35);
+  border-radius: 12px;
 }
 
 .adminShell .primaryButton:hover:not(:disabled) {
-  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 22px 38px rgba(56, 189, 248, 0.45);
 }
 
 .adminShell .secondaryButton,
 .adminShell .ghostButton {
-  border-radius: 10px;
+  border-radius: 12px;
+}
+
+.ultraDark {
+  background: radial-gradient(circle at 10% 20%, rgba(15, 23, 42, 0.45), transparent 60%),
+    linear-gradient(160deg, #020409, #030712 70%, #01030a) !important;
+}
+
+.ultraDark .card,
+.ultraDark .incidentItem,
+.ultraDark .suggestionItem {
+  background: rgba(5, 7, 18, 0.92) !important;
+  border-color: rgba(148, 163, 184, 0.12) !important;
 }
 
 .shell::before,
@@ -83,6 +96,185 @@
   background: rgba(6, 8, 25, 0.72);
   box-shadow: 0 35px 65px rgba(4, 9, 29, 0.45);
   backdrop-filter: blur(24px);
+}
+
+.commandBar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) minmax(300px, 2fr) minmax(220px, 1.1fr);
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(6, 10, 24, 0.8);
+  box-shadow: 0 40px 80px rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(26px);
+  margin-bottom: 2.5rem;
+}
+
+.commandBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brandGlyph {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.35);
+}
+
+.commandBrand h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.6vw, 2.8rem);
+  letter-spacing: -0.02em;
+}
+
+.commandBrand p {
+  margin: 0.25rem 0 0;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.commandBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.metaTag {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.commandStatusRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.statusTile,
+.statusTileWide {
+  padding: 0.75rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(10, 14, 30, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statusTile span,
+.statusTileWide span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.statusTile strong,
+.statusTileWide strong {
+  font-size: 0.95rem;
+  color: #f8fafc;
+}
+
+.statusTileWide {
+  grid-column: span 2;
+}
+
+.statusPulsePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.12);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #7dd3fc;
+}
+
+.statusPulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+  animation: pulseLive 1.6s infinite;
+}
+
+.commandActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.commandToggle {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 0.5rem 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.commandToggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(56, 189, 248, 0.15);
+}
+
+.commandShortcutStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+}
+
+.commandShortcutHint {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(148, 163, 184, 0.65);
+}
+
+.logoutButtonMinimal {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  background: rgba(15, 23, 42, 0.45);
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.logoutButtonMinimal:hover {
+  background: rgba(30, 41, 59, 0.8);
+  transform: translateY(-1px);
 }
 
 .topBar h1 {
@@ -254,6 +446,10 @@
   gap: 1.5rem;
 }
 
+.adminHero {
+  grid-column: 1 / -1;
+}
+
 @media (min-width: 768px) {
   .adminGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -282,6 +478,12 @@
   grid-column: span 1;
 }
 
+.adminSecondary {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+}
+
 @media (min-width: 1024px) {
   .adminPrimary {
     grid-column: span 8;
@@ -290,6 +492,10 @@
   .adminSecondary {
     grid-column: span 4;
   }
+}
+
+.adminMapWide {
+  grid-column: 1 / -1;
 }
 
 .adminDebug {
@@ -315,7 +521,7 @@
 }
 
 .adminMapCard {
-  height: 320px;
+  min-height: 420px;
 }
 
 @media (min-width: 768px) {
@@ -451,6 +657,64 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--card-soft);
   line-height: 1.6;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.incidentItem::before {
+  content: "";
+  position: absolute;
+  inset: 10px auto 10px 0;
+  width: 4px;
+  border-radius: 8px;
+  background: var(--incident-accent, rgba(148, 163, 184, 0.6));
+  box-shadow: 0 0 16px var(--incident-accent, rgba(148, 163, 184, 0.6));
+}
+
+.incidentItem:hover {
+  transform: translateY(-2px);
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.45);
+}
+
+.incidentSelected {
+  border-color: rgba(56, 189, 248, 0.7) !important;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2), 0 20px 45px rgba(14, 116, 144, 0.35);
+}
+
+.incidentCritical {
+  --incident-accent: rgba(248, 113, 113, 0.95);
+}
+
+.incidentHigh {
+  --incident-accent: rgba(248, 113, 113, 0.9);
+}
+
+.incidentMedium {
+  --incident-accent: rgba(250, 204, 21, 0.85);
+}
+
+.incidentLow {
+  --incident-accent: rgba(74, 222, 128, 0.8);
+}
+
+.incidentTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.incidentIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  box-shadow: 0 10px 20px rgba(14, 116, 144, 0.35);
 }
 
 .suggestionItem {
@@ -527,6 +791,14 @@
   padding: 0.35rem 0.85rem;
   font-size: 0.82rem;
   transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .ghostButton:hover {
@@ -889,6 +1161,47 @@
   background: var(--card-soft);
   padding: 1rem;
   border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.analyticsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analyticsHeader small {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.analyticsValue {
+  font-size: 2rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.analyticsTag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(125, 211, 252, 0.8);
+}
+
+.sparkline {
+  width: 60px;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), rgba(56, 189, 248, 0.7), rgba(168, 85, 247, 0.25));
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
 .chatPanel {
@@ -1123,6 +1436,8 @@
   color: #05060a;
   box-shadow: 0 15px 25px rgba(86, 202, 255, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .primaryButton:hover:not(:disabled) {
@@ -1143,6 +1458,28 @@
   background: transparent;
   color: var(--text);
   transition: border-color 0.2s ease, color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.primaryButton::after,
+.secondaryButton::after,
+.ghostButton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35), transparent 60%);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.primaryButton:active::after,
+.secondaryButton:active::after,
+.ghostButton:active::after {
+  opacity: 0.35;
+  transform: scale(1.1);
+  transition: none;
 }
 
 .secondaryButton:hover {
@@ -1665,6 +2002,30 @@
   }
 }
 
+@keyframes pulseLive {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
 @keyframes typingBounce {
   0% {
     transform: translateY(0);
@@ -1734,6 +2095,18 @@
   .emergencyPrimary {
     width: 100%;
     text-align: center;
+  }
+
+  .commandBar {
+    grid-template-columns: 1fr;
+  }
+
+  .commandActions {
+    align-items: flex-start;
+  }
+
+  .statusTileWide {
+    grid-column: span 1;
   }
 }
 
@@ -1827,6 +2200,279 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.commandHeroShell {
+  gap: 2rem;
+}
+
+.commandHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+  gap: 1.5rem;
+  padding: clamp(1.2rem, 2.4vw, 2rem);
+  border-radius: 24px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: linear-gradient(140deg, rgba(10, 16, 32, 0.9), rgba(6, 8, 22, 0.95));
+  box-shadow: 0 40px 80px rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(18px);
+}
+
+.heroPrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.heroHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.heroKicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.heroTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.heroTitleRow h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.heroTitleRow p {
+  margin: 0.4rem 0 0;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.severityOrb {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.45);
+  animation: pulseLive 2.2s infinite;
+}
+
+.severityOrbLow {
+  background: rgba(74, 222, 128, 0.18);
+  border-color: rgba(74, 222, 128, 0.45);
+  box-shadow: 0 0 26px rgba(74, 222, 128, 0.45);
+}
+
+.severityOrbMedium {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 28px rgba(250, 204, 21, 0.45);
+}
+
+.severityOrbHigh,
+.severityOrbCritical {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.55);
+  box-shadow: 0 0 30px rgba(248, 113, 113, 0.5);
+}
+
+.heroMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.heroChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.heroTimeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.85rem;
+}
+
+.timelineNode {
+  position: relative;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(10, 14, 30, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.timelineActive {
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #e2e8f0;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
+}
+
+.timelinePending {
+  opacity: 0.7;
+}
+
+.timelinePending .timelinePulse {
+  background: rgba(148, 163, 184, 0.5);
+  box-shadow: none;
+}
+
+.timelinePulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+}
+
+.heroWidgets {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.summaryWidget {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(10, 14, 30, 0.75);
+  color: #e2e8f0;
+}
+
+.summaryWidget p {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.summaryWidget strong {
+  font-size: 1rem;
+}
+
+.widgetSub {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.commandPanel {
+  padding: 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(8, 12, 26, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.aiTriggerButton {
+  font-size: 0.85rem;
+  padding: 0.7rem 1.1rem;
+}
+
+.commandStatusChip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.riskLow {
+  border-color: rgba(74, 222, 128, 0.45);
+  color: #86efac;
+}
+
+.riskMedium {
+  border-color: rgba(250, 204, 21, 0.45);
+  color: #fde68a;
+}
+
+.riskHigh,
+.riskCritical {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+.dispatchFeed {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dispatchItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(12, 18, 32, 0.7);
+}
+
+.dispatchItem strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.dispatchItem span {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.dispatchDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 10px rgba(148, 163, 184, 0.4);
+}
+
+.dispatchPending .dispatchDot {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+.dispatchInProgress .dispatchDot {
+  background: rgba(250, 204, 21, 0.8);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
+}
+
+.dispatchCompleted .dispatchDot {
+  background: rgba(74, 222, 128, 0.9);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
+}
+
+.dispatchCritical .dispatchDot {
+  background: rgba(248, 113, 113, 0.95);
+  box-shadow: 0 0 14px rgba(248, 113, 113, 0.7);
 }
 
 .sectionHeading {
@@ -2118,6 +2764,10 @@
   .departmentList span {
     text-align: left;
   }
+
+  .commandHero {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --- SIMULATION COMMAND CENTER UPGRADE --- */
@@ -2208,10 +2858,26 @@
   overflow: hidden;
 }
 
+.scenarioCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), transparent 60%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 .scenarioCard:hover {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
+}
+
+.scenarioCard:active::after {
+  opacity: 0.4;
+  transform: scale(1.1);
+  transition: none;
 }
 
 .scenarioExpanded {
@@ -2329,6 +2995,8 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 
 .primaryAction:hover:not(:disabled) {
@@ -2344,6 +3012,26 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-weight: 600;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.primaryAction::after,
+.secondaryAction::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35), transparent 60%);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.primaryAction:active::after,
+.secondaryAction:active::after {
+  opacity: 0.35;
+  transform: scale(1.1);
+  transition: none;
 }
 
 .simulationTimeline {
@@ -2436,8 +3124,26 @@
 
 /* --- AI COMMAND ASSISTANT STYLES --- */
 .aiCommandAssistant {
-  background: linear-gradient(165deg, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.9) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+  background: linear-gradient(160deg, rgba(12, 18, 35, 0.92) 0%, rgba(6, 9, 24, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  box-shadow: 0 25px 55px rgba(2, 6, 23, 0.5);
+}
+
+.aiActive {
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3), 0 0 30px rgba(56, 189, 248, 0.25);
+}
+
+.aiSeverityLow {
+  border-color: rgba(74, 222, 128, 0.45) !important;
+}
+
+.aiSeverityMedium {
+  border-color: rgba(250, 204, 21, 0.45) !important;
+}
+
+.aiSeverityCritical {
+  border-color: rgba(248, 113, 113, 0.5) !important;
+  box-shadow: 0 0 24px rgba(248, 113, 113, 0.25);
 }
 
 .aiTitleGroup {
@@ -2577,4 +3283,18 @@ input:checked + .toggleSlider:before { transform: translateX(16px); }
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.4);
   line-height: 1.5;
+}
+
+.skeletonStack {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.skeletonLine {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.35), rgba(148, 163, 184, 0.15));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
 }
