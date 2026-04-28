@@ -1,4 +1,4 @@
-steps:
+  steps:
   # Build the container image with build arguments for Next.js
   - name: 'gcr.io/cloud-builders/docker'
     args:
