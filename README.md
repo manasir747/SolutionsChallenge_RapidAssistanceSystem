@@ -1,13 +1,14 @@
 # Rapid Crisis Response System
 
-AI-assisted emergency orchestration for hotels and resorts. Guests trigger incidents instantly, staff coordinate in real time, and admins receive Gemini-powered insights backed by Firebase.
+IoT-ready, agentic AI emergency orchestration for hotels and resorts. Guests trigger incidents instantly, staff coordinate in real time, and admins receive Gemini-powered insights backed by Firebase.
 
 ## Stack
 
 - **Next.js 14** with the App Router and TypeScript
 - **Firebase** Authentication, Firestore, Cloud Functions
-- **Google Gemini** for chat, admin suggestions, and automatic incident summaries
+- **Google Gemini** for agentic AI chat, admin suggestions, and automatic incident summaries
 - **Google Maps API** for live responder routing
+- **IoT-ready data model** to connect sensors, wearables, and panic devices
 
 ## Prerequisites
 
@@ -75,9 +76,23 @@ firebase deploy --only functions
 
 - **Role-based dashboards**: Guest emergency pad, staff response console, admin command board.
 - **Realtime Firestore listeners**: Live incident feeds and chat sync.
-- **Gemini copilots**: Ask-AI chat, action suggestions, and automated incident summaries.
+- **Agentic AI copilots**: Ask-AI chat, action suggestions, and automated incident summaries that adapt to live updates.
 - **Google Maps integration**: Plot guests, staff, and safe exits with styled map overlays.
 - **Accessibility friendly**: Large tap targets, high-contrast palette, and responsive layout.
+- **IoT ingestion ready**: Incident schema supports sensor events, panic buttons, and wearable telemetry as first-class triggers.
+
+## IoT + Agentic AI Focus
+
+- **IoT signals as triggers**: Designed to ingest fire alarms, smoke sensors, door access anomalies, and wearable SOS taps.
+- **Agentic orchestration**: AI suggests next-best actions and updates recommendations as the situation evolves.
+- **Human-in-the-loop**: Staff can accept, reject, or override AI guidance, keeping control with operators.
+
+## Real-World Impact
+
+- **Faster response times**: Automated triage reduces the time from incident detection to staff assignment.
+- **Better situational awareness**: Live maps, chat, and summaries reduce information gaps across teams.
+- **Consistent post-incident reports**: AI summaries help with compliance, audits, and training.
+- **Scalable safety**: One platform supports multiple properties without duplicating processes.
 
 ## Scripts
 
