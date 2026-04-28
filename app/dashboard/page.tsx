@@ -190,7 +190,7 @@ export default function DashboardPage() {
     });
     const direction = closest.lng - geoLocation.lng >= 0 ? "right" : "left";
     return {
-      label: closest.label,
+      label: closest.label ?? "Nearest exit",
       distance: Math.max(5, Math.round(minDistance)),
       direction
     };
