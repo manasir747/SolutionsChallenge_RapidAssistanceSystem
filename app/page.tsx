@@ -232,7 +232,7 @@ export default function HomePage() {
       <div className={styles.testimonialWrapper}>
         <div className={styles.testimonialCard}>
           <p className={styles.testimonialText}>
-            "Rapid Assistance transformed our emergency response protocols. We reduced our incident triage time by nearly 40% in the first quarter."
+            &quot;Rapid Assistance transformed our emergency response protocols. We reduced our incident triage time by nearly 40% in the first quarter.&quot;
           </p>
           <div className={styles.testimonialAuthor}>Director of Security, Grand Horizon Resorts</div>
         </div>

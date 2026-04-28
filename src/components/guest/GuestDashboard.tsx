@@ -174,7 +174,7 @@ export default function GuestDashboard({
             <div className={styles.metaBox}>
               <div className={styles.metaLabel}>Responder Status</div>
               <div className={styles.metaValue}>
-                {activeIncident?.status === 'assigned' ? 'En Route' : 'Awaiting Dispatch'}
+                {activeIncident?.status === 'en_route' ? 'En Route' : 'Awaiting Dispatch'}
               </div>
             </div>
             <div className={styles.metaBox}>

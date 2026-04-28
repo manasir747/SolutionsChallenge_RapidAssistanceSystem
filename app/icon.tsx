@@ -32,6 +32,7 @@ export default function Icon() {
         {/* Zoom into the image to crop out empty space, fitting the logo perfectly */}
         <img
           src={logoSrc}
+          alt=""
           style={{
             width: '150%',
             height: '150%',
