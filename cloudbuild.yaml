@@ -44,7 +44,7 @@
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'GEMINI_API_KEY=AIzaSyA05PysH0u5LiaK3nBCVJMmExMOPmyyrE8'
+      - 'GEMINI_API_KEY=REPLACE_WITH_NEW_KEY'
 
 images:
   - 'gcr.io/$PROJECT_ID/rapid-assistance-system:$COMMIT_SHA'
